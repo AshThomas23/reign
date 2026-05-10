@@ -1,0 +1,3171 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reign — Rule your money.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --accent: #6366f1;
+      --accent-dim: #4f46e5;
+      --bg: #09090b;
+      --panel: #18181b;
+      --panel-hover: #27272a;
+      --border: #27272a;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --text-faint: #71717a;
+    }
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body {
+      font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      letter-spacing: -0.011em;
+    }
+    h1, h2, h3, h4 {
+      letter-spacing: -0.025em;
+    }
+    .serif {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+    }
+    .glow-bg {
+      background:
+        radial-gradient(ellipse 60% 40% at 30% 20%, rgba(99, 102, 241, 0.18), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 30%, rgba(168, 85, 247, 0.12), transparent 60%),
+        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(99, 102, 241, 0.1), transparent 70%);
+    }
+    .mesh-bg {
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(99, 102, 241, 0.08), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(168, 85, 247, 0.06), transparent 60%);
+    }
+    .grid-pattern {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .panel-hover:hover {
+      background: var(--panel-hover);
+      transition: background 150ms ease;
+    }
+    .input {
+      background: #0a0a0c;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      transition: border-color 150ms ease;
+    }
+    .input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .input::placeholder { color: var(--text-faint); }
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+      transition: all 150ms ease;
+    }
+    .btn-primary:hover { background: #818cf8; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      transition: all 150ms ease;
+    }
+    .btn-ghost:hover { background: var(--panel-hover); color: var(--text); }
+    .tab-button {
+      color: var(--text-faint);
+      transition: color 150ms ease;
+      position: relative;
+    }
+    .tab-button:hover { color: var(--text-dim); }
+    .tab-button.active { color: var(--text); }
+    .tab-button.active::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #18181b 0%, #27272a 50%, #18181b 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .fade-in { animation: fadeIn 400ms ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .accent-text { color: var(--accent); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .scroll-thin::-webkit-scrollbar { width: 6px; }
+    .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .progress-bar {
+      height: 6px;
+      background: #27272a;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 600ms ease;
+    }
+    .danger { color: #ef4444; }
+    .warn { color: #f59e0b; }
+    select.input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%23a1a1aa' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 10px;
+      animation: slideIn 200ms ease;
+      z-index: 100;
+      max-width: 320px;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn 200ms ease;
+    }
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalIn 250ms ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .demo-banner {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+    }
+    .pricing-card {
+      transition: all 200ms ease;
+    }
+    .pricing-card:hover {
+      transform: translateY(-2px);
+    }
+    .check-icon {
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+    .x-icon {
+      flex-shrink: 0;
+      color: #71717a;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- DEMO BANNER -->
+  <div class="demo-banner text-center text-xs py-2 px-4 font-medium">
+    <span class="hidden md:inline">⚡ Early access — Manual onboarding while we build automation. Lock in $5 Basic for life on the waitlist below.</span>
+    <span class="md:hidden">⚡ Early access — Lock in $5 Basic for life.</span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="border-b border-zinc-800 sticky top-0 backdrop-blur-md bg-zinc-950/80 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <button onclick="showLanding()" class="flex items-center gap-2.5 hover:opacity-80 transition" title="Go to homepage">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center relative" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); box-shadow: 0 4px 12px -2px rgba(99,102,241,0.4);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="0.5" stroke-linejoin="round">
+            <path d="M2 19h20l-2-9-5 4-3-7-3 7-5-4-2 9z M4 21h16"/>
+          </svg>
+        </div>
+        <span class="font-bold text-xl tracking-tight">Reign</span>
+      </button>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <button onclick="scrollToSection('how-it-works')" class="text-zinc-400 hover:text-white transition">How it works</button>
+        <button onclick="scrollToSection('why-section')" class="text-zinc-400 hover:text-white transition">Why Reign</button>
+        <button onclick="scrollToSection('pricing-section')" class="text-zinc-400 hover:text-white transition">Pricing</button>
+        <button onclick="showModal('about')" class="text-zinc-400 hover:text-white transition">About</button>
+        <button onclick="showApp(true)" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Get Started</button>
+      </nav>
+      <button class="md:hidden btn-primary px-3 py-1.5 rounded-lg text-sm font-semibold" onclick="showApp(true)">
+        Get Started
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="glow-bg border-b border-zinc-800 landing-only relative overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-30 pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 py-16 md:py-24 text-center relative">
+      <div class="badge mb-5">Personal finance, finally clear</div>
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-5 leading-[0.95]">
+        See where <span class="serif accent-text">your</span><br/>
+        money goes.<br/>
+        <span class="text-zinc-500">Then change it.</span>
+      </h1>
+      <p class="text-zinc-400 text-base md:text-lg max-w-xl mx-auto mb-8">
+        Reign turns your transactions into clear insights, finds the leaks, and shows you exactly how long until you can afford the things you actually want.
+      </p>
+      <!-- Trust row -->
+      <div class="flex items-center justify-center gap-5 text-xs text-zinc-500 mb-8 flex-wrap">
+        <div class="flex items-center gap-1.5"><span class="accent-text">●</span> No bank login required</div>
+        <div class="flex items-center gap-1.5"><span class="accent-text">●</span> Data stays in your browser</div>
+        <div class="flex items-center gap-1.5"><span class="accent-text">●</span> Free forever plan</div>
+      </div>
+      <div class="flex items-center justify-center gap-3 flex-wrap mb-3">
+        <button onclick="showApp(true)" class="btn-primary px-7 py-3.5 rounded-lg text-sm font-semibold shadow-lg" style="box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.4);">Get Started — it's free →</button>
+        <button onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})" class="btn-ghost px-7 py-3.5 rounded-lg text-sm">See how it works</button>
+      </div>
+      <div class="text-xs text-zinc-600">No credit card. No bank login. Try in under 10 seconds.</div>
+
+      <!-- DASHBOARD PREVIEW MOCKUP -->
+      <div class="mt-16 max-w-5xl mx-auto relative">
+        <div class="absolute -inset-x-8 -top-8 -bottom-8 rounded-3xl" style="background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(99,102,241,0.15), transparent 70%);"></div>
+        <div class="relative panel p-3 md:p-5" style="background: linear-gradient(180deg, #1a1a1f, #0f0f12); box-shadow: 0 50px 80px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);">
+          <!-- Browser chrome -->
+          <div class="flex items-center gap-1.5 mb-3 pb-3 border-b border-zinc-800">
+            <div class="w-2.5 h-2.5 rounded-full" style="background:#ef4444"></div>
+            <div class="w-2.5 h-2.5 rounded-full" style="background:#f59e0b"></div>
+            <div class="w-2.5 h-2.5 rounded-full" style="background:#10b981"></div>
+            <div class="ml-3 text-xs text-zinc-600 font-mono">reign.app/dashboard</div>
+          </div>
+          <!-- Mock dashboard -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-3">
+            <div class="p-3 md:p-4 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Total Spent</div>
+              <div class="text-xl md:text-2xl font-bold">$1,214</div>
+              <div class="text-[10px] text-zinc-500 mt-1">25 transactions</div>
+            </div>
+            <div class="p-3 md:p-4 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Budget</div>
+              <div class="text-xl md:text-2xl font-bold">$1,500</div>
+              <div class="text-[10px] text-zinc-500 mt-1">81% used</div>
+            </div>
+            <div class="p-3 md:p-4 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Top Category</div>
+              <div class="text-xl md:text-2xl font-bold">Shopping</div>
+              <div class="text-[10px] text-zinc-500 mt-1">$598 spent</div>
+            </div>
+            <div class="p-3 md:p-4 rounded-lg" style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.3);">
+              <div class="text-[10px] uppercase tracking-wider mb-1 accent-text">Reality Check</div>
+              <div class="text-xl md:text-2xl font-bold accent-text">On track</div>
+              <div class="text-[10px] text-zinc-500 mt-1">$285 under</div>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <!-- Mock chart panel -->
+            <div class="p-3 md:p-5 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-xs font-semibold mb-3">Spending breakdown</div>
+              <!-- Mock pie chart -->
+              <div class="flex items-center gap-3">
+                <svg width="100" height="100" viewBox="0 0 36 36" class="flex-shrink-0">
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#27272a" stroke-width="6"/>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#6366f1" stroke-width="6" stroke-dasharray="40 100" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#a855f7" stroke-width="6" stroke-dasharray="22 100" stroke-dashoffset="-40" transform="rotate(-90 18 18)"/>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#f59e0b" stroke-width="6" stroke-dasharray="18 100" stroke-dashoffset="-62" transform="rotate(-90 18 18)"/>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#84cc16" stroke-width="6" stroke-dasharray="14 100" stroke-dashoffset="-80" transform="rotate(-90 18 18)"/>
+                </svg>
+                <div class="flex-1 space-y-1.5">
+                  <div class="flex items-center justify-between text-xs"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:#6366f1"></span>Shopping</div><span>$598</span></div>
+                  <div class="flex items-center justify-between text-xs"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:#a855f7"></span>Groceries</div><span>$220</span></div>
+                  <div class="flex items-center justify-between text-xs"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:#f59e0b"></span>Food</div><span>$171</span></div>
+                  <div class="flex items-center justify-between text-xs"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:#84cc16"></span>Transport</div><span>$143</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- Mock AI Coach panel -->
+            <div class="p-3 md:p-5 rounded-lg" style="background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04)); border: 1px solid rgba(99,102,241,0.2);">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                </div>
+                <div class="text-xs font-semibold">AI Coach</div>
+              </div>
+              <div class="text-xs text-zinc-400 leading-relaxed mb-2">"Your shopping ate 49% of your spending — $598. Most 'deals' you bought weren't deals. They were dopamine."</div>
+              <div class="text-[10px] accent-text font-medium">Tip: Try the 48-hour rule on anything over $50.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main id="main-app" class="max-w-7xl mx-auto px-6 py-8 hidden">
+    <div class="mb-6 flex items-center justify-between flex-wrap gap-3">
+      <button onclick="showLanding()" class="px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium transition" style="background: rgba(99,102,241,0.1); color: var(--accent); border: 1px solid rgba(99,102,241,0.3);" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        Home
+      </button>
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-zinc-500 hidden sm:block">🔒 Data stays in your browser</div>
+        <button onclick="scrollToSection('pricing-section')" class="btn-ghost px-3 py-1.5 rounded-lg text-xs">Pricing</button>
+        <button onclick="exportCSV()" class="btn-ghost px-3 py-1.5 rounded-lg text-xs">📊 Export</button>
+      </div>
+    </div>
+    <!-- STAT CARDS -->
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div class="panel p-5">
+        <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Total Spent</div>
+        <div class="text-3xl font-bold" id="stat-total">$0</div>
+        <div class="text-xs text-zinc-500 mt-1" id="stat-total-sub">No data yet</div>
+      </div>
+      <div class="panel p-5">
+        <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Monthly Budget</div>
+        <div class="text-3xl font-bold" id="stat-budget">$0</div>
+        <div class="text-xs text-zinc-500 mt-1" id="stat-budget-sub">Set a budget below</div>
+      </div>
+      <div class="panel p-5">
+        <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Top Category</div>
+        <div class="text-3xl font-bold truncate" id="stat-top">—</div>
+        <div class="text-xs text-zinc-500 mt-1" id="stat-top-sub">Awaiting analysis</div>
+      </div>
+      <div class="panel p-5">
+        <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Reality Check</div>
+        <div class="text-3xl font-bold" id="stat-reality">—</div>
+        <div class="text-xs text-zinc-500 mt-1" id="stat-reality-sub">Days to broke</div>
+      </div>
+      <div class="panel p-5 col-span-2 md:col-span-1" style="background: linear-gradient(135deg, rgba(245,158,11,0.06), transparent); border-color: rgba(245,158,11,0.2);">
+        <div class="text-xs uppercase tracking-wider mb-2" style="color:#f59e0b">🔥 Streak</div>
+        <div class="text-3xl font-bold" id="stat-streak">0</div>
+        <div class="text-xs text-zinc-500 mt-1" id="stat-streak-sub">Days using the app</div>
+      </div>
+    </section>
+
+    <!-- TIME PERIOD BREAKDOWN -->
+    <section class="panel p-5 mb-6" style="background: linear-gradient(135deg, rgba(99,102,241,0.04), transparent);">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Spending pace</div>
+          <div class="text-sm text-zinc-300">Based on your current data, here's what you're on track for:</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="text-center py-3 px-2 rounded-lg" style="background: rgba(0,0,0,0.2);">
+          <div class="text-xs text-zinc-500 mb-1">Per Day</div>
+          <div class="text-xl md:text-2xl font-bold" id="period-day">$0</div>
+        </div>
+        <div class="text-center py-3 px-2 rounded-lg" style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);">
+          <div class="text-xs accent-text mb-1 uppercase tracking-wider font-semibold">This Month</div>
+          <div class="text-xl md:text-2xl font-bold accent-text" id="period-month">$0</div>
+        </div>
+        <div class="text-center py-3 px-2 rounded-lg" style="background: rgba(0,0,0,0.2);">
+          <div class="text-xs text-zinc-500 mb-1">Per Year</div>
+          <div class="text-xl md:text-2xl font-bold" id="period-year">$0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABS -->
+    <nav class="flex items-center gap-6 border-b border-zinc-800 mb-6 overflow-x-auto">
+      <button class="tab-button active py-3 text-sm font-medium whitespace-nowrap" data-tab="analyze" onclick="switchTab('analyze')">Analyze</button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="coach" onclick="switchTab('coach')">AI Coach <span class="badge ml-1" style="font-size:9px; padding:1px 5px;">NEW</span></button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="insights" onclick="switchTab('insights')">Insights</button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="goal" onclick="switchTab('goal')">Goal Planner</button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="personality" onclick="switchTab('personality')">Personality</button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="wishlist" onclick="switchTab('wishlist')">Reverse Wishlist</button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="leaks" onclick="switchTab('leaks')">Money Leaks</button>
+      <button class="tab-button py-3 text-sm font-medium whitespace-nowrap" data-tab="taxes" onclick="switchTab('taxes')">Taxes <span class="badge ml-1" style="font-size:9px; padding:1px 5px; background:rgba(245,158,11,0.1); color:#f59e0b; border-color:rgba(245,158,11,0.3);">NEW</span></button>
+    </nav>
+
+    <!-- ANALYZE TAB -->
+    <section id="tab-analyze" class="tab-content fade-in">
+      <div class="grid lg:grid-cols-5 gap-6">
+        <!-- Input Panel -->
+        <div class="lg:col-span-2">
+          <div class="panel p-6">
+            <h2 class="text-lg font-semibold mb-1">Add transactions</h2>
+            <p class="text-sm text-zinc-500 mb-5">Paste, type, or upload a CSV from your bank.</p>
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Monthly Budget</label>
+            <input id="budget-input" type="number" placeholder="e.g. 1500" class="input w-full px-3 py-2.5 mb-4 text-sm" />
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Transactions</label>
+            <textarea id="tx-input" rows="10" class="input w-full px-3 py-2.5 text-sm font-mono scroll-thin" placeholder="Format: Merchant - Amount&#10;&#10;Examples:&#10;Uber - 24.50&#10;Starbucks - 6.75&#10;Amazon - 89.99&#10;Netflix - 15.99&#10;Whole Foods - 142.30"></textarea>
+
+            <div class="flex items-center gap-2 mt-3 flex-wrap">
+              <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleCSVUpload(event)" />
+              <button onclick="document.getElementById('csv-upload').click()" class="btn-ghost px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 flex-1 justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                CSV
+              </button>
+              <button onclick="showModal('receipt')" class="btn-ghost px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 flex-1 justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Receipt
+              </button>
+              <button onclick="loadSampleData()" class="btn-ghost px-3 py-2 rounded-lg text-xs flex-1">Sample</button>
+            </div>
+
+            <div class="mt-5 flex items-center gap-2">
+              <button onclick="analyze()" class="btn-primary flex-1 py-2.5 rounded-lg text-sm">Analyze Spending</button>
+              <button onclick="clearAll()" class="btn-ghost px-4 py-2.5 rounded-lg text-sm">Clear</button>
+            </div>
+
+            <p class="text-xs text-zinc-600 mt-4">Data is stored locally in your browser. Nothing is uploaded.</p>
+          </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="lg:col-span-3">
+          <div id="results-empty" class="panel p-10 text-center">
+            <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <h3 class="font-semibold mb-1">Awaiting your transactions</h3>
+            <p class="text-sm text-zinc-500 max-w-xs mx-auto">Paste some transactions or load the sample data to see your spending breakdown.</p>
+          </div>
+
+          <div id="results" class="hidden space-y-6">
+            <div id="reality-banner" class="panel p-5 border-l-4" style="border-left-color: var(--accent);">
+              <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Reality Check</div>
+              <div id="reality-text" class="text-base font-medium leading-relaxed"></div>
+            </div>
+
+            <div class="panel p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold">Spending breakdown</h3>
+                <span id="tx-count" class="text-xs text-zinc-500"></span>
+              </div>
+              <div class="grid md:grid-cols-2 gap-6 items-center">
+                <div class="relative h-64">
+                  <canvas id="chart-pie"></canvas>
+                </div>
+                <div id="category-list" class="space-y-3"></div>
+              </div>
+            </div>
+
+            <div class="panel p-6">
+              <h3 class="font-semibold mb-4">Top merchants</h3>
+              <div id="merchant-list" class="space-y-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI COACH TAB -->
+    <section id="tab-coach" class="tab-content hidden">
+      <div class="grid lg:grid-cols-5 gap-6">
+        <div class="lg:col-span-3">
+          <div class="panel flex flex-col" style="height: 600px;">
+            <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                </div>
+                <div>
+                  <div class="font-semibold">AI Money Coach</div>
+                  <div class="text-xs text-zinc-500">Honest. Blunt. Won't sugarcoat.</div>
+                </div>
+              </div>
+              <button onclick="resetChat()" class="btn-ghost px-3 py-1.5 rounded-lg text-xs">Clear</button>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-thin"></div>
+            <div class="px-4 pb-3 flex items-center gap-2 flex-wrap" id="chat-suggestions"></div>
+            <div class="border-t border-zinc-800 p-3 flex items-center gap-2">
+              <input id="chat-input" type="text" placeholder="Ask anything about your money..." class="input flex-1 px-4 py-2.5 text-sm" onkeydown="if(event.key==='Enter')sendChat()" />
+              <button onclick="sendChat()" class="btn-primary px-4 py-2.5 rounded-lg text-sm">Send</button>
+            </div>
+          </div>
+        </div>
+        <div class="lg:col-span-2 space-y-4">
+          <div class="panel p-5">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-3">What you can ask</div>
+            <div class="space-y-2 text-sm">
+              <div class="text-zinc-300">💰 "How much did I spend on coffee?"</div>
+              <div class="text-zinc-300">🛍️ "Can I afford a $200 jacket?"</div>
+              <div class="text-zinc-300">✂️ "What should I cut to save more?"</div>
+              <div class="text-zinc-300">📊 "Am I doing okay this month?"</div>
+              <div class="text-zinc-300">🏠 "How long until I save $20k?"</div>
+              <div class="text-zinc-300">🔥 "Roast my spending."</div>
+            </div>
+          </div>
+          <div class="panel p-5">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Why it's different</div>
+            <p class="text-sm text-zinc-400 leading-relaxed">Most AI coaches give you generic advice. This one only knows YOUR data — your transactions, your budget, your goals. So when it says "stop ordering DoorDash," it actually knows you ordered 3 times this week.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PERSONALITY TAB -->
+    <section id="tab-personality" class="tab-content hidden">
+      <div class="mb-4 panel p-4 flex items-start gap-3" style="background: rgba(168,85,247,0.04); border-color: rgba(168,85,247,0.2);">
+        <div class="text-xl flex-shrink-0">🎭</div>
+        <div>
+          <div class="font-semibold text-sm mb-0.5">What is Spending Personality?</div>
+          <div class="text-xs text-zinc-400">Based on how you spend, we figure out your "archetype" — Comfort Spender, Subscription Hoarder, Discipline Builder, etc. Plus a roast of your habits and a "Future You" projection. Shareable.</div>
+        </div>
+      </div>
+      <div id="personality-empty" class="panel p-10 text-center">
+        <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>
+        </div>
+        <h3 class="font-semibold mb-1">No spending personality yet</h3>
+        <p class="text-sm text-zinc-500 max-w-sm mx-auto">Run an analysis on the Analyze tab and we'll figure out your spending archetype, generate a roast, and project your future self.</p>
+      </div>
+      <div id="personality-content" class="hidden grid md:grid-cols-2 gap-6"></div>
+    </section>
+
+    <!-- INSIGHTS TAB -->
+    <section id="tab-insights" class="tab-content hidden">
+      <div class="mb-4 panel p-4 flex items-start gap-3" style="background: rgba(99,102,241,0.04); border-color: rgba(99,102,241,0.2);">
+        <div class="text-xl flex-shrink-0">💡</div>
+        <div>
+          <div class="font-semibold text-sm mb-0.5">What is Insights?</div>
+          <div class="text-xs text-zinc-400">AI-generated observations about your spending patterns. We look at your data and call out what's normal, what's leaking, and what you should probably do about it.</div>
+        </div>
+      </div>
+      <div class="panel p-8 text-center" id="insights-empty">
+        <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M9.663 17h4.673M12 3v1M3.343 7.343l.707.707M5 12H4M19 12h1M19.071 5.929l-.707.707M16 17a4 4 0 1 0-8 0v0a4 4 0 0 0 8 0Z"/></svg>
+        </div>
+        <h3 class="font-semibold mb-1">No insights yet</h3>
+        <p class="text-sm text-zinc-500">Run an analysis on the Analyze tab to generate insights.</p>
+      </div>
+      <div id="insights-content" class="hidden grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- GOAL PLANNER TAB -->
+    <section id="tab-goal" class="tab-content hidden">
+      <div class="grid lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="panel p-6">
+            <h2 class="text-lg font-semibold mb-1">Path to a Goal</h2>
+            <p class="text-sm text-zinc-500 mb-5">Tell us what you're saving for. We'll do the math based on your real spending.</p>
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">What's the goal?</label>
+            <select id="goal-type" class="input w-full px-3 py-2.5 mb-3 text-sm">
+              <option value="house">🏠 House Down Payment</option>
+              <option value="car">🚗 New Car</option>
+              <option value="emergency">🛟 Emergency Fund</option>
+              <option value="vacation">✈️ Vacation</option>
+              <option value="debt">💳 Pay Off Debt</option>
+              <option value="invest">📈 Investment Lump Sum</option>
+              <option value="custom">⭐ Custom Goal</option>
+            </select>
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Target Amount ($)</label>
+            <input id="goal-amount" type="number" placeholder="e.g. 20000" class="input w-full px-3 py-2.5 mb-3 text-sm" />
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Monthly Income ($) <span class="text-zinc-600">— optional</span></label>
+            <input id="goal-income" type="number" placeholder="e.g. 4000" class="input w-full px-3 py-2.5 mb-4 text-sm" />
+
+            <button onclick="calculateGoal()" class="btn-primary w-full py-2.5 rounded-lg text-sm">Calculate my path</button>
+
+            <p class="text-xs text-zinc-600 mt-4">Uses your transaction data and budget from the Analyze tab.</p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div id="goal-empty" class="panel p-10 text-center">
+            <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+            </div>
+            <h3 class="font-semibold mb-1">No goal set yet</h3>
+            <p class="text-sm text-zinc-500 max-w-sm mx-auto">Pick a goal, enter your target, and we'll calculate exactly how long it'll take based on your current spending — and what to cut to get there faster.</p>
+          </div>
+          <div id="goal-result" class="hidden space-y-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WISHLIST TAB -->
+    <section id="tab-wishlist" class="tab-content hidden">
+      <div class="grid lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="panel p-6">
+            <h2 class="text-lg font-semibold mb-1">Reverse Wishlist</h2>
+            <p class="text-sm text-zinc-500 mb-5">Save things you almost bought but didn't. Watch your savings grow.</p>
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Item Name</label>
+            <input id="wl-name" type="text" placeholder="e.g. AirPods Pro" class="input w-full px-3 py-2.5 mb-3 text-sm" />
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Price ($)</label>
+            <input id="wl-price" type="number" placeholder="e.g. 249" class="input w-full px-3 py-2.5 mb-3 text-sm" />
+
+            <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">Link (optional)</label>
+            <input id="wl-url" type="url" placeholder="https://..." class="input w-full px-3 py-2.5 mb-4 text-sm" />
+
+            <button onclick="addWishlistItem()" class="btn-primary w-full py-2.5 rounded-lg text-sm">Add to wishlist</button>
+
+            <div class="mt-6 pt-6 border-t border-zinc-800">
+              <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Total Money Saved</div>
+              <div class="text-3xl font-bold accent-text" id="wl-saved">$0</div>
+              <p class="text-xs text-zinc-500 mt-1" id="wl-saved-sub">By not buying things you almost bought</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div id="wl-empty" class="panel p-10 text-center">
+            <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <h3 class="font-semibold mb-1">Your wishlist is empty</h3>
+            <p class="text-sm text-zinc-500 max-w-xs mx-auto">Next time you almost buy something, add it here. Then mark it 'didn't buy' and watch your savings grow.</p>
+          </div>
+          <div id="wl-list" class="hidden space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAXES TAB -->
+    <section id="tab-taxes" class="tab-content hidden">
+      <div id="taxes-empty" class="panel p-10 text-center">
+        <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        </div>
+        <h3 class="font-semibold mb-1">Tax tracker — for freelancers, gig workers, and anyone with deductibles</h3>
+        <p class="text-sm text-zinc-500 max-w-sm mx-auto mb-6">Mark transactions as Business / Medical / Charity to track potential deductions and estimate your tax savings.</p>
+        <button onclick="loadSampleData(); switchTab('taxes');" class="btn-primary px-5 py-2.5 rounded-lg text-sm">Try with sample data</button>
+      </div>
+      <div id="taxes-content" class="hidden space-y-4">
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="panel p-5" style="background: linear-gradient(135deg, rgba(245,158,11,0.06), transparent); border-color: rgba(245,158,11,0.2);">
+            <div class="text-xs uppercase tracking-wider mb-2" style="color:#f59e0b">Total Deductible</div>
+            <div class="text-3xl font-bold" id="tax-total">$0</div>
+            <div class="text-xs text-zinc-500 mt-1" id="tax-total-sub">Across categories</div>
+          </div>
+          <div class="panel p-5" style="background: linear-gradient(135deg, rgba(99,102,241,0.06), transparent); border-color: rgba(99,102,241,0.2);">
+            <div class="text-xs uppercase tracking-wider mb-2 accent-text">Estimated Tax Savings</div>
+            <div class="text-3xl font-bold accent-text" id="tax-savings">$0</div>
+            <div class="text-xs text-zinc-500 mt-1">Assuming 25% effective rate</div>
+          </div>
+          <div class="panel p-5">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Tagged Transactions</div>
+            <div class="text-3xl font-bold" id="tax-count">0</div>
+            <div class="text-xs text-zinc-500 mt-1" id="tax-count-sub">of 0 total</div>
+          </div>
+        </div>
+
+        <div class="panel p-6">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h3 class="font-semibold">Tag your transactions</h3>
+            <div class="flex items-center gap-2">
+              <button onclick="autoTagDeductibles()" class="btn-ghost px-3 py-1.5 rounded-lg text-xs">✨ Auto-tag suggestions</button>
+              <button onclick="exportTaxXLSX()" class="btn-primary px-3 py-1.5 rounded-lg text-xs">📊 Export tax spreadsheet</button>
+            </div>
+          </div>
+          <p class="text-sm text-zinc-500 mb-4">Click any transaction to mark it as deductible. Common categories: Business expenses (freelance/gig work), Medical (out-of-pocket), Charity (donations), Education.</p>
+          <div id="tax-list" class="space-y-2"></div>
+        </div>
+
+        <div class="panel p-5 border-l-4" style="border-left-color: #f59e0b; background: rgba(245,158,11,0.04);">
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2" style="color:#f59e0b">⚠️ Important</div>
+          <p class="text-sm text-zinc-300 leading-relaxed">These are <b>estimates only</b>, not tax advice. Tax laws are complicated and vary by country, state, and income. Always consult a CPA or tax professional before filing. We're here to help you organize — not replace your accountant.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEAKS TAB -->
+    <section id="tab-leaks" class="tab-content hidden">
+      <div class="mb-4 panel p-4 flex items-start gap-3" style="background: rgba(236,72,153,0.04); border-color: rgba(236,72,153,0.2);">
+        <div class="text-xl flex-shrink-0">💸</div>
+        <div>
+          <div class="font-semibold text-sm mb-0.5">What are Money Leaks?</div>
+          <div class="text-xs text-zinc-400">Recurring subscriptions you might have forgotten and merchants you keep buying from. Average person has 4 subscriptions they don't use. We find them so you can cancel.</div>
+        </div>
+      </div>
+      <div id="leaks-empty" class="panel p-10 text-center">
+        <div class="w-12 h-12 rounded-xl bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3 class="font-semibold mb-1">No leaks detected yet</h3>
+        <p class="text-sm text-zinc-500">Add transactions and we'll find recurring subscriptions and money leaks for you.</p>
+      </div>
+      <div id="leaks-content" class="hidden space-y-4"></div>
+    </section>
+  </main>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="border-t border-zinc-800 landing-only relative" style="background: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%); color: #18181b;">
+    <div class="max-w-7xl mx-auto px-6 py-20 relative">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mb-3" style="background: rgba(99,102,241,0.1); color: var(--accent); border: 1px solid rgba(99,102,241,0.3);">How it works</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-3" style="color:#18181b;">
+          From transactions <span class="serif accent-text">to clarity</span>,<br/>
+          in under a minute.
+        </h2>
+        <p class="max-w-2xl mx-auto" style="color:#52525b;">Four simple steps. No setup, no bank login, no spreadsheet.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Step 1 -->
+        <div class="p-6 relative rounded-2xl" style="background: white; border: 1px solid #e4e4e7; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div class="absolute top-4 right-4 text-5xl font-extrabold" style="color:#e4e4e7;">01</div>
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(99,102,241,0.15); color: var(--accent);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <div class="font-bold mb-2" style="color:#18181b;">Drop your transactions</div>
+          <p class="text-sm leading-relaxed" style="color:#52525b;">Paste them in, upload a CSV from your bank, or scan a receipt with your phone. Takes 10 seconds.</p>
+        </div>
+        <!-- Step 2 -->
+        <div class="p-6 relative rounded-2xl" style="background: white; border: 1px solid #e4e4e7; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div class="absolute top-4 right-4 text-5xl font-extrabold" style="color:#e4e4e7;">02</div>
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(168,85,247,0.15); color: #a855f7;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          </div>
+          <div class="font-bold mb-2" style="color:#18181b;">See where it actually went</div>
+          <p class="text-sm leading-relaxed" style="color:#52525b;">Auto-categorized in seconds. Charts, top merchants, subscriptions you forgot — all on one screen.</p>
+        </div>
+        <!-- Step 3 -->
+        <div class="p-6 relative rounded-2xl" style="background: white; border: 1px solid #e4e4e7; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div class="absolute top-4 right-4 text-5xl font-extrabold" style="color:#e4e4e7;">03</div>
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(236,72,153,0.15); color: #ec4899;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          </div>
+          <div class="font-bold mb-2" style="color:#18181b;">Get the truth — bluntly</div>
+          <p class="text-sm leading-relaxed" style="color:#52525b;">AI Coach gives you blunt, honest advice. Money Leak detector finds zombie subscriptions. Reality check tells you when you'll be broke.</p>
+        </div>
+        <!-- Step 4 -->
+        <div class="p-6 relative rounded-2xl" style="background: white; border: 1px solid #e4e4e7; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div class="absolute top-4 right-4 text-5xl font-extrabold" style="color:#e4e4e7;">04</div>
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(245,158,11,0.15); color: #f59e0b;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+          </div>
+          <div class="font-bold mb-2" style="color:#18181b;">Save for what actually matters</div>
+          <p class="text-sm leading-relaxed" style="color:#52525b;">Pick a goal — house, car, debt payoff. Reign tells you exactly how long it'll take and what to cut to get there sooner.</p>
+        </div>
+      </div>
+
+      <div class="text-center mt-10">
+        <button onclick="showApp(true)" class="btn-primary px-7 py-3.5 rounded-lg text-sm font-semibold">Try it with sample data →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY REIGN - COMPARISON SECTION -->
+  <section id="why-section" class="border-t border-zinc-800 mt-16 landing-only">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      <div class="text-center mb-10">
+        <div class="badge mb-3">Why Reign</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-3">Built different from <span class="serif accent-text">the apps you've tried</span>.</h2>
+        <p class="text-zinc-400 max-w-xl mx-auto">Most finance apps just track. Reign helps you act.</p>
+      </div>
+
+      <div class="panel overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-zinc-800">
+                <th class="text-left p-4 font-medium text-zinc-400">Feature</th>
+                <th class="p-4 font-bold accent-text bg-indigo-500/5">Reign</th>
+                <th class="p-4 font-medium text-zinc-500">Mint</th>
+                <th class="p-4 font-medium text-zinc-500">Rocket Money</th>
+                <th class="p-4 font-medium text-zinc-500">YNAB</th>
+              </tr>
+            </thead>
+            <tbody class="text-zinc-300">
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">Honest, blunt AI coach</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+              </tr>
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">"Can I afford this?" pre-purchase tool</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+              </tr>
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">Reverse Wishlist (rewards not spending)</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+              </tr>
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">Goal Planner with realistic timelines</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center"><span class="text-zinc-500 text-lg">~</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center"><span class="accent-text text-lg">✓</span></td>
+              </tr>
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">Subscription leak detection</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+              </tr>
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">Spending personality + roast</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+              </tr>
+              <tr class="border-b border-zinc-800/50">
+                <td class="p-4 text-zinc-300">Doesn't sell your data</td>
+                <td class="p-4 text-center bg-indigo-500/5"><span class="accent-text text-lg">✓</span></td>
+                <td class="p-4 text-center text-zinc-600">—</td>
+                <td class="p-4 text-center"><span class="text-zinc-500 text-lg">~</span></td>
+                <td class="p-4 text-center"><span class="accent-text text-lg">✓</span></td>
+              </tr>
+              <tr>
+                <td class="p-4 text-zinc-300 font-medium">Price</td>
+                <td class="p-4 text-center bg-indigo-500/5 font-bold accent-text">Free • $5 • $14</td>
+                <td class="p-4 text-center text-zinc-500">RIP (shut down)</td>
+                <td class="p-4 text-center text-zinc-500">$4-12/mo</td>
+                <td class="p-4 text-center text-zinc-500">$14.99/mo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="text-center text-xs text-zinc-600 mt-4">Comparison based on publicly available info. We're new — but we're built for the people the others ignored.</p>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="border-t border-zinc-800 landing-only">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      <div class="text-center mb-10">
+        <div class="badge mb-3">Early users</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-3">Loved by <span class="serif accent-text">first users</span>.</h2>
+        <p class="text-zinc-400 max-w-xl mx-auto">Real feedback from the early access group.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="panel p-6 hover:border-indigo-500/30 transition">
+          <div class="flex gap-0.5 mb-3 text-sm">
+            <span style="color:#f59e0b">★★★★★</span>
+          </div>
+          <p class="text-sm text-zinc-300 leading-relaxed mb-5">"The 'Can I afford this?' button has saved me from at least 5 stupid purchases this month. Closest thing to a financial intervention without an actual person yelling at me."</p>
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/80?img=47" alt="Maya R." class="w-10 h-10 rounded-full object-cover" loading="lazy" />
+            <div>
+              <div class="text-sm font-semibold">Maya R.</div>
+              <div class="text-xs text-zinc-500">Product Designer · Toronto</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel p-6 hover:border-indigo-500/30 transition">
+          <div class="flex gap-0.5 mb-3 text-sm">
+            <span style="color:#f59e0b">★★★★★</span>
+          </div>
+          <p class="text-sm text-zinc-300 leading-relaxed mb-5">"Got told I'm 'The Subscription Hoarder.' I cancelled four streaming services that night. App paid for itself in week one."</p>
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/80?img=12" alt="Jordan K." class="w-10 h-10 rounded-full object-cover" loading="lazy" />
+            <div>
+              <div class="text-sm font-semibold">Jordan K.</div>
+              <div class="text-xs text-zinc-500">Software Engineer · NYC</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel p-6 hover:border-indigo-500/30 transition">
+          <div class="flex gap-0.5 mb-3 text-sm">
+            <span style="color:#f59e0b">★★★★★</span>
+          </div>
+          <p class="text-sm text-zinc-300 leading-relaxed mb-5">"Goal Planner showed me I can actually save for a house in 4 years if I stop being dumb. No other app told me what to cut. This one does."</p>
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/80?img=44" alt="Priya S." class="w-10 h-10 rounded-full object-cover" loading="lazy" />
+            <div>
+              <div class="text-sm font-semibold">Priya S.</div>
+              <div class="text-xs text-zinc-500">Marketing Lead · Vancouver</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIFESTYLE IMAGE — person using Reign -->
+      <div class="mt-16 pt-12 border-t border-zinc-800">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+          <div class="relative rounded-2xl overflow-hidden" style="aspect-ratio: 4/3;">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="Person using Reign on laptop" class="w-full h-full object-cover" loading="lazy" />
+            <div class="absolute inset-0" style="background: linear-gradient(135deg, transparent 50%, rgba(99,102,241,0.3) 100%);"></div>
+          </div>
+          <div>
+            <div class="badge mb-3">Built for everyday humans</div>
+            <h3 class="text-3xl md:text-4xl font-extrabold tracking-tighter mb-4">Used by people who'd rather <span class="serif accent-text">spend less time</span> in spreadsheets.</h3>
+            <p class="text-zinc-400 text-base leading-relaxed mb-5">Reign is for the freelancer who wants to know if they can buy that monitor. The student trying to save for a trip. The couple trying to stop fighting about subscriptions. Everyday humans, real money decisions, zero corporate finance lingo.</p>
+            <button onclick="showApp(true)" class="btn-primary px-5 py-2.5 rounded-lg text-sm font-semibold">Try it yourself →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISIBLE PRICING SECTION -->
+  <section id="pricing-section" class="border-t border-zinc-800 landing-only relative">
+    <div class="absolute inset-0 mesh-bg pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 py-20 relative">
+      <div class="text-center mb-12">
+        <div class="badge mb-3">Pricing</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-3">
+          Simple <span class="serif accent-text">pricing</span>. Real value.
+        </h2>
+        <p class="text-zinc-400 max-w-xl mx-auto">Start free. Upgrade when it pays for itself. Cancel in one click.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+        <!-- FREE TIER -->
+        <div class="panel p-6 flex flex-col">
+          <div class="text-sm text-zinc-400 mb-1 font-medium">Free</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-5xl font-extrabold">$0</span>
+            <span class="text-zinc-500 text-sm">/forever</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-5">For curious humans</div>
+          <ul class="space-y-2.5 text-sm flex-1">
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>1 month of transactions</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Auto-categorization + charts</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>3 AI insights per analysis</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Spending personality + roast</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>"Can I afford this?" tool</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>5 AI Coach messages/day</li>
+          </ul>
+          <button onclick="showApp(true)" class="btn-ghost w-full py-3 rounded-lg text-sm mt-6">Start free</button>
+        </div>
+
+        <!-- BASIC TIER (FEATURED) -->
+        <div class="panel p-6 flex flex-col relative" style="border-color: rgba(99,102,241,0.5); background: linear-gradient(180deg, rgba(99,102,241,0.06), transparent); transform: scale(1.02); box-shadow: 0 20px 50px -10px rgba(99,102,241,0.2);">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color:white;">MOST POPULAR</div>
+          <div class="text-sm accent-text mb-1 font-bold">Basic</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-5xl font-extrabold">$5</span>
+            <span class="text-zinc-500 text-sm">/month</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-5">or $49/year — save $11</div>
+          <ul class="space-y-2.5 text-sm flex-1">
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><span><b>Everything in Free</b>, plus:</span></li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Unlimited transaction history</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Goal Planner</b> with timelines</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Money Leak Detector</b></li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Tax tracker</b> for freelancers</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Excel export with reports</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>25 AI Coach messages/day</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Weekly email digest</li>
+          </ul>
+          <button onclick="upgradeClicked('Basic')" class="btn-primary w-full py-3 rounded-lg text-sm mt-6 font-semibold">Start Basic</button>
+        </div>
+
+        <!-- PRO TIER -->
+        <div class="panel p-6 flex flex-col relative" style="border-color: rgba(245,158,11,0.3);">
+          <div class="absolute -top-3 right-6 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider" style="background: linear-gradient(135deg, #f59e0b, #ec4899); color:white;">⚡ POWER USER</div>
+          <div class="text-sm mb-1 font-bold" style="color:#f59e0b">Pro</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-5xl font-extrabold">$14</span>
+            <span class="text-zinc-500 text-sm">/month</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-5">or $129/year — save $39</div>
+          <ul class="space-y-2.5 text-sm flex-1">
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><span><b>Everything in Basic</b>, plus:</span></li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Unlimited AI Coach</b> (GPT-4)</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Receipt photo scanner</b></li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Price drop alerts</b></li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span><b>Bank sync</b> (Plaid)</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Family plan (up to 4)</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>SMS alerts</li>
+            <li class="flex items-start gap-2"><span class="accent-text mt-0.5">✓</span>Priority support</li>
+          </ul>
+          <button onclick="upgradeClicked('Pro')" class="w-full py-3 rounded-lg text-sm mt-6 font-semibold" style="background: linear-gradient(135deg, #f59e0b, #ec4899); color: white;">Start Pro</button>
+        </div>
+      </div>
+
+      <div class="mt-10 text-center text-xs text-zinc-500 flex items-center justify-center gap-6 flex-wrap">
+        <span>🎓 50% off with .edu email</span>
+        <span>👨‍👩‍👧 Family plan included on Pro</span>
+        <span>💰 7-day money-back on all paid plans</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-zinc-800 landing-only">
+    <div class="max-w-3xl mx-auto px-6 py-16">
+      <div class="text-center mb-10">
+        <div class="badge mb-3">FAQ</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter">Questions, <span class="serif accent-text">answered</span>.</h2>
+      </div>
+      <div class="space-y-3" id="faq-list">
+        <div class="panel p-5 cursor-pointer faq-item" onclick="toggleFAQ(this)">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold text-sm">Is my financial data safe?</div>
+            <svg class="faq-icon transition-transform" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="faq-body hidden mt-3 text-sm text-zinc-400 leading-relaxed">In this demo, all your data stays in your browser — nothing is uploaded. In the full version, we use bank-level encryption, never sell your data, and never train AI on your individual transactions. You can export and delete everything anytime.</div>
+        </div>
+        <div class="panel p-5 cursor-pointer faq-item" onclick="toggleFAQ(this)">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold text-sm">Do I need to connect my bank?</div>
+            <svg class="faq-icon transition-transform" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="faq-body hidden mt-3 text-sm text-zinc-400 leading-relaxed">No. You can paste transactions or upload a CSV from your bank. We don't ask for your bank login. (Bank sync via Plaid is on the roadmap if you want it.)</div>
+        </div>
+        <div class="panel p-5 cursor-pointer faq-item" onclick="toggleFAQ(this)">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold text-sm">How is this different from Mint or YNAB?</div>
+            <svg class="faq-icon transition-transform" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="faq-body hidden mt-3 text-sm text-zinc-400 leading-relaxed">Other apps tell you what you spent. We tell you what to do about it. The "Can I afford this?" button intervenes before you spend. The AI coach gives blunt advice based on your actual data. The Goal Planner shows realistic timelines. Most apps are passive. We're not.</div>
+        </div>
+        <div class="panel p-5 cursor-pointer faq-item" onclick="toggleFAQ(this)">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold text-sm">Can I cancel anytime?</div>
+            <svg class="faq-icon transition-transform" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="faq-body hidden mt-3 text-sm text-zinc-400 leading-relaxed">Yes. One click in settings. No phone calls, no "are you sure?" guilt trips. We also have a 7-day money-back guarantee on Pro.</div>
+        </div>
+        <div class="panel p-5 cursor-pointer faq-item" onclick="toggleFAQ(this)">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold text-sm">Is there a student discount?</div>
+            <svg class="faq-icon transition-transform" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="faq-body hidden mt-3 text-sm text-zinc-400 leading-relaxed">Yes — 50% off Pro with a valid .edu email. We were students once too.</div>
+        </div>
+        <div class="panel p-5 cursor-pointer faq-item" onclick="toggleFAQ(this)">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold text-sm">Who built this?</div>
+            <svg class="faq-icon transition-transform" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="faq-body hidden mt-3 text-sm text-zinc-400 leading-relaxed">A solo dev who got tired of finance apps treating users like idiots and got equally tired of pretending to be "good with money." Made in Canada, 2026. Powered by AI and the suspicion that everyone's spending is worse than they think.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EMAIL CAPTURE / WAITLIST -->
+  <section class="border-t border-zinc-800 landing-only">
+    <div class="max-w-4xl mx-auto px-6 py-16">
+      <div class="panel p-8 md:p-12 text-center" style="background: radial-gradient(ellipse at center top, rgba(99,102,241,0.08), transparent), var(--panel);">
+        <div class="badge mb-4">Early access</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-3"><span class="serif accent-text">$3</span>/month — forever.</h2>
+        <p class="text-zinc-400 max-w-lg mx-auto mb-6">Get on the early list and lock in Basic at <b class="text-white">$3/month for life</b> (normally $5). No card. No spam. Just the heads-up when we go live.</p>
+        <form id="waitlist-form" onsubmit="joinWaitlist(event)" class="flex items-center gap-2 max-w-md mx-auto">
+          <input id="waitlist-email" type="email" required placeholder="you@email.com" class="input flex-1 px-4 py-3 text-sm" />
+          <button type="submit" class="btn-primary px-6 py-3 rounded-lg text-sm whitespace-nowrap">Get early access</button>
+        </form>
+        <div id="waitlist-success" class="hidden mt-4 text-sm accent-text font-medium">✓ You're in. We'll email you when Pro launches.</div>
+        <div class="mt-6 flex items-center justify-center gap-6 text-xs text-zinc-500 flex-wrap">
+          <div class="flex items-center gap-1.5"><span class="accent-text">✓</span> No card</div>
+          <div class="flex items-center gap-1.5"><span class="accent-text">✓</span> Cancel anytime</div>
+          <div class="flex items-center gap-1.5"><span class="accent-text">✓</span> 7-day money-back</div>
+          <div class="flex items-center gap-1.5"><span class="accent-text">✓</span> Built solo, not VC</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-zinc-800 mt-0">
+    <div class="max-w-7xl mx-auto px-6 py-8 flex items-center justify-between flex-wrap gap-4">
+      <div class="text-xs text-zinc-600">© 2026 Reign. Demo build. Not financial advice.</div>
+      <div class="flex items-center gap-4 text-xs text-zinc-500 flex-wrap">
+        <button onclick="showModal('pricing')" class="hover:text-zinc-300">Pricing</button>
+        <button onclick="showModal('about')" class="hover:text-zinc-300">About</button>
+        <button onclick="showModal('privacy')" class="hover:text-zinc-300">Privacy</button>
+        <button onclick="showModal('tip')" class="hover:text-zinc-300 flex items-center gap-1">☕ Buy me a coffee</button>
+        <button onclick="shareApp()" class="hover:text-zinc-300 flex items-center gap-1">📤 Share</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- PRICING MODAL -->
+  <div id="modal-pricing" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'pricing')">
+    <div class="modal p-6 md:p-10" style="max-width: 1100px;">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <div class="badge mb-3">Pricing</div>
+          <h2 class="text-2xl md:text-3xl font-bold mb-1">Built for how serious you are about your money.</h2>
+          <p class="text-zinc-400 text-sm md:text-base">Pick the tier that matches your level. Switch anytime.</p>
+        </div>
+        <button onclick="hideModal('pricing')" class="text-zinc-500 hover:text-white p-2 -mr-2 -mt-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <!-- FREE -->
+        <div class="pricing-card panel p-6">
+          <div class="text-sm text-zinc-400 mb-1">Free</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-4xl font-bold">$0</span>
+            <span class="text-zinc-500 text-sm">/forever</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-4">For curious humans</div>
+          <p class="text-sm text-zinc-500 mb-5">Get a real taste. No credit card.</p>
+
+          <ul class="space-y-2.5 text-sm">
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Track 1 month of transactions</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Auto-categorize + pie chart</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>3 AI insights per analysis</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Spending personality + roast</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>"Can I afford this?" tool</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>5 AI Coach messages/day</li>
+            <li class="flex items-start gap-2 text-zinc-500"><svg class="x-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Goal Planner</li>
+            <li class="flex items-start gap-2 text-zinc-500"><svg class="x-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Money Leak Detector</li>
+            <li class="flex items-start gap-2 text-zinc-500"><svg class="x-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Bank sync, receipt scanner</li>
+          </ul>
+
+          <button onclick="hideModal('pricing')" class="btn-ghost w-full py-2.5 rounded-lg text-sm mt-6">Stay on Free</button>
+        </div>
+
+        <!-- BASIC -->
+        <div class="pricing-card panel p-6 relative" style="border-color: rgba(99, 102, 241, 0.4); background: linear-gradient(180deg, rgba(99,102,241,0.04), transparent);">
+          <div class="absolute -top-3 right-6 badge" style="background: var(--accent); color: #ffffff; border: none;">MOST POPULAR</div>
+          <div class="text-sm accent-text mb-1 font-medium">Basic</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-4xl font-bold">$5</span>
+            <span class="text-zinc-500 text-sm">/month</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-4">or $49/year — save $11</div>
+          <p class="text-sm text-zinc-300 mb-5">For people ready to actually change their spending.</p>
+
+          <ul class="space-y-2.5 text-sm">
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span><b>Everything in Free</b>, plus:</span></li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Unlimited transaction history</b></li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Goal Planner</b> — house, car, debt timelines</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Money Leak Detector</b></li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>25 AI Coach messages/day</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Weekly email digest</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Tax tracker</b> — flag deductibles, estimate savings</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Excel export</b> with multi-sheet reports</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Custom categories + Unlimited Wishlist</li>
+          </ul>
+
+          <button onclick="upgradeClicked('Basic')" class="btn-primary w-full py-2.5 rounded-lg text-sm mt-6">Start Basic</button>
+          <p class="text-xs text-zinc-600 mt-3 text-center">7-day money-back. Cancel anytime.</p>
+        </div>
+
+        <!-- PRO -->
+        <div class="pricing-card panel p-6 relative" style="border-color: rgba(245, 158, 11, 0.3); background: linear-gradient(180deg, rgba(245,158,11,0.03), transparent);">
+          <div class="absolute -top-3 right-6 badge" style="background: linear-gradient(135deg, #f59e0b, #ec4899); color: white; border: none;">⚡ POWER USER</div>
+          <div class="text-sm mb-1 font-medium" style="color:#f59e0b">Pro</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-4xl font-bold">$14</span>
+            <span class="text-zinc-500 text-sm">/month</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-4">or $129/year — save $39</div>
+          <p class="text-sm text-zinc-300 mb-5">For people who want every advantage. Worth every dollar if you're saving for a house or paying off debt.</p>
+
+          <ul class="space-y-2.5 text-sm">
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span><b>Everything in Basic</b>, plus:</span></li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Unlimited AI Coach (GPT-4)</b></li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Receipt photo scanner</b></li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Price drop alerts</b> (paste any URL)</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><b>Bank sync</b> (Plaid integration)</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Family plan (up to 4 members)</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Multi-currency support</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Custom alerts & SMS notifications</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Priority support (24h response)</li>
+            <li class="flex items-start gap-2"><svg class="check-icon mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Early access to new features</li>
+          </ul>
+
+          <button onclick="upgradeClicked('Pro')" class="btn-primary w-full py-2.5 rounded-lg text-sm mt-6" style="background: linear-gradient(135deg, #f59e0b, #ec4899); color: white;">Start Pro</button>
+          <p class="text-xs text-zinc-600 mt-3 text-center">7-day money-back. Cancel anytime.</p>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-zinc-800 grid md:grid-cols-3 gap-4 text-center text-xs text-zinc-500">
+        <div>🎓 <b class="text-zinc-300">50% off</b> with .edu email</div>
+        <div>👨‍👩‍👧 <b class="text-zinc-300">Family plan</b> on Pro — 4 accounts</div>
+        <div>💼 <b class="text-zinc-300">Teams</b>: email hello@finance-ai.app</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT MODAL -->
+  <div id="modal-about" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'about')">
+    <div class="modal p-0 overflow-hidden" style="max-width: 720px;">
+      <!-- Hero image -->
+      <div class="relative h-48 md:h-56 overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&auto=format&fit=crop" alt="Money" class="w-full h-full object-cover" />
+        <div class="absolute inset-0" style="background: linear-gradient(180deg, transparent 30%, var(--panel) 100%);"></div>
+        <button onclick="hideModal('about')" class="absolute top-3 right-3 text-white/80 hover:text-white p-2 rounded-full bg-black/30 backdrop-blur-sm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 md:p-10 -mt-8 relative">
+        <div class="badge mb-3">About</div>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5">Why I built <span class="serif accent-text">Reign</span>.</h2>
+
+        <div class="space-y-4 text-sm text-zinc-300 leading-relaxed">
+          <p>I tried Mint, Rocket Money, YNAB. They all do the same thing — show you a chart of what you already spent and expect you to figure out the rest. None of them ever told me the one thing that would have actually changed my behavior: <span class="text-white font-medium">"You can't afford that, and here's why."</span></p>
+
+          <p>Reign is built for people who want a finance app that does more than report on yesterday. It catches you before you spend, finds leaks you forgot existed, and shows you exactly how long until you can afford what you actually want.</p>
+
+          <div class="grid grid-cols-3 gap-3 my-5">
+            <div class="text-center p-3 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-2xl font-extrabold accent-text">$1.2k</div>
+              <div class="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Avg saved/yr</div>
+            </div>
+            <div class="text-center p-3 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-2xl font-extrabold accent-text">4.8★</div>
+              <div class="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Beta rating</div>
+            </div>
+            <div class="text-center p-3 rounded-lg bg-zinc-900/60 border border-zinc-800">
+              <div class="text-2xl font-extrabold accent-text">5s</div>
+              <div class="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">To get insights</div>
+            </div>
+          </div>
+
+          <p class="text-zinc-400 text-xs pt-3 border-t border-zinc-800">Built solo in 2026. Made in Canada. The opposite of corporate.</p>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between flex-wrap gap-3">
+          <div class="text-xs text-zinc-500">Feedback: <span class="text-zinc-300">hello@reign.app</span></div>
+          <button onclick="hideModal('about')" class="btn-ghost px-4 py-2 rounded-lg text-sm">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY MODAL -->
+  <div id="modal-privacy" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'privacy')">
+    <div class="modal p-6 md:p-10" style="max-width: 640px;">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <div class="badge mb-3">Privacy</div>
+          <h2 class="text-2xl md:text-3xl font-bold">Your data stays with you.</h2>
+        </div>
+        <button onclick="hideModal('privacy')" class="text-zinc-500 hover:text-white p-2 -mr-2 -mt-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm text-zinc-300 leading-relaxed">
+        <p>This demo build stores all your transaction data <span class="text-white font-medium">in your browser only</span>. Nothing is sent to a server. Nothing is uploaded. If you clear your browser data, your transactions go with it.</p>
+        <p>The full version (with accounts and Pro features) will use industry-standard encryption and never share your data with third parties. We will never sell your information. We will never train AI on your individual data.</p>
+        <p class="text-zinc-400">Questions? <span class="text-zinc-300">privacy@finance-ai.app</span></p>
+      </div>
+
+      <div class="mt-6 pt-6 border-t border-zinc-800 text-right">
+        <button onclick="hideModal('privacy')" class="btn-ghost px-4 py-2 rounded-lg text-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIPT SCANNER MODAL -->
+  <div id="modal-receipt" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'receipt')">
+    <div class="modal p-6 md:p-8" style="max-width: 540px;">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="badge mb-3" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(236,72,153,0.1)); color:#f59e0b; border-color: rgba(245,158,11,0.3);">⚡ PRO FEATURE</div>
+          <h2 class="text-2xl font-bold mb-1">Receipt Scanner</h2>
+          <p class="text-sm text-zinc-500">Snap a photo. We'll auto-read merchant, total, and date.</p>
+        </div>
+        <button onclick="hideModal('receipt')" class="text-zinc-500 hover:text-white p-2 -mr-2 -mt-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <input type="file" id="receipt-upload" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)" />
+
+        <div onclick="document.getElementById('receipt-upload').click()" class="cursor-pointer panel p-8 text-center hover:bg-zinc-800/40 transition" style="border-style: dashed;">
+          <div class="w-14 h-14 rounded-2xl bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="font-medium mb-1">Tap to take a photo or upload</div>
+          <div class="text-xs text-zinc-500">JPG, PNG, HEIC up to 10 MB</div>
+        </div>
+
+        <div id="receipt-result" class="hidden space-y-3"></div>
+
+        <div class="panel p-4" style="background: rgba(245,158,11,0.04); border-color: rgba(245,158,11,0.2);">
+          <div class="text-xs text-zinc-300 leading-relaxed"><b style="color:#f59e0b">Demo mode:</b> The receipt scanner uses GPT-4 Vision in production. In this demo, we'll generate a realistic mock result so you can see how it works. Pro users get real OCR + auto-categorization.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIP JAR MODAL -->
+  <div id="modal-tip" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'tip')">
+    <div class="modal p-6 md:p-8 text-center" style="max-width: 460px;">
+      <div class="flex items-start justify-end mb-2">
+        <button onclick="hideModal('tip')" class="text-zinc-500 hover:text-white p-2 -mr-2 -mt-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="text-5xl mb-3">☕</div>
+      <h2 class="text-2xl font-bold mb-2">Support a solo dev.</h2>
+      <p class="text-sm text-zinc-400 mb-6 leading-relaxed">This app is built by one person. If it's helped you save money, helped you laugh at your spending, or just feels like a real product — a tip keeps the lights on while I work on the paid version.</p>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button onclick="tip(3)" class="btn-ghost py-3 rounded-lg font-semibold">$3</button>
+        <button onclick="tip(7)" class="btn-primary py-3 rounded-lg font-semibold">$7</button>
+        <button onclick="tip(15)" class="btn-ghost py-3 rounded-lg font-semibold">$15</button>
+      </div>
+      <p class="text-xs text-zinc-600">Or just share the app with one friend — that helps just as much.</p>
+      <button onclick="shareApp(); hideModal('tip')" class="btn-ghost w-full py-2.5 rounded-lg text-sm mt-4">📤 Share instead</button>
+    </div>
+  </div>
+
+  <!-- "CAN I AFFORD THIS?" FLOATING BUTTON -->
+  <button onclick="showModal('afford')" id="afford-fab" class="fixed bottom-6 right-6 z-30 px-5 py-3 rounded-full shadow-xl flex items-center gap-2 text-sm font-semibold transition-transform hover:scale-105" style="background: var(--accent); color: #ffffff; box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.5);">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Can I afford this?
+  </button>
+
+  <!-- AFFORDABILITY MODAL -->
+  <div id="modal-afford" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'afford')">
+    <div class="modal p-6 md:p-8" style="max-width: 540px;">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <div class="badge mb-3">Decision Helper</div>
+          <h2 class="text-2xl font-bold">Can I afford this?</h2>
+          <p class="text-sm text-zinc-500 mt-1">The brutal truth in 2 seconds.</p>
+        </div>
+        <button onclick="hideModal('afford')" class="text-zinc-500 hover:text-white p-2 -mr-2 -mt-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">What's the price?</label>
+          <input id="afford-price" type="number" placeholder="e.g. 199" class="input w-full px-4 py-3 text-lg font-semibold" oninput="recalculateAffordability()" />
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 mb-2 block uppercase tracking-wider">What is it? (optional)</label>
+          <input id="afford-name" type="text" placeholder="e.g. AirPods Pro" class="input w-full px-4 py-2.5 text-sm" />
+        </div>
+
+        <div id="afford-result" class="hidden space-y-3 pt-2"></div>
+
+        <div id="afford-empty" class="text-center py-8 text-sm text-zinc-500">
+          Enter a price to see the verdict.
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button onclick="saveToWishlistFromAfford()" class="btn-ghost flex-1 py-2.5 rounded-lg text-sm" id="afford-save-btn" disabled style="opacity:0.5">
+            Skip it → save to Wishlist
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    // ============ CATEGORY DETECTION ============
+    const CATEGORIES = {
+      "Food & Dining": ["mcdonald", "starbucks", "chipotle", "doordash", "uber eats", "ubereats", "grubhub", "pizza", "restaurant", "taco bell", "kfc", "subway", "dunkin", "panera", "wendys", "burger", "cafe", "coffee", "tim hortons", "popeyes", "chick-fil-a", "chickfila"],
+      "Transportation": ["uber", "lyft", "taxi", "shell", "exxon", "chevron", "bp ", "parking", "transit", "mta", "subway pass", "gas ", "fuel"],
+      "Shopping": ["amazon", "target", "walmart", "costco", "ebay", "etsy", "best buy", "ikea", "macy", "nordstrom", "shein", "temu", "asos", "zara", "h&m"],
+      "Groceries": ["whole foods", "trader joe", "kroger", "safeway", "publix", "aldi", "wegmans", "sprouts", "fresh market", "grocery"],
+      "Subscriptions": ["netflix", "spotify", "hulu", "disney", "hbo", "max", "youtube premium", "apple music", "apple tv", "paramount", "peacock", "audible", "kindle unlimited", "patreon", "substack", "notion", "github copilot", "chatgpt", "midjourney", "claude"],
+      "Entertainment": ["steam", "xbox", "playstation", "nintendo", "movie", "cinema", "amc", "regal", "ticketmaster", "concert"],
+      "Utilities": ["electric", "water", "comcast", "xfinity", "verizon", "att", "t-mobile", "sprint", "spectrum", "internet", "phone bill", "utility"],
+      "Healthcare": ["pharmacy", "cvs", "walgreens", "doctor", "medical", "dental", "clinic", "hospital", "rite aid"],
+      "Fitness": ["gym", "planet fitness", "equinox", "peloton", "yoga", "crossfit", "fitness"],
+      "Other": []
+    };
+
+    function categorize(merchant) {
+      const m = merchant.toLowerCase();
+      for (const [cat, keywords] of Object.entries(CATEGORIES)) {
+        for (const kw of keywords) {
+          if (m.includes(kw)) return cat;
+        }
+      }
+      return "Other";
+    }
+
+    const CATEGORY_COLORS = {
+      "Food & Dining": "#6366f1",
+      "Transportation": "#6366f1",
+      "Shopping": "#f59e0b",
+      "Groceries": "#84cc16",
+      "Subscriptions": "#ec4899",
+      "Entertainment": "#a855f7",
+      "Utilities": "#06b6d4",
+      "Healthcare": "#ef4444",
+      "Fitness": "#14b8a6",
+      "Other": "#71717a"
+    };
+
+    // ============ STATE ============
+    let state = {
+      transactions: [],
+      budget: 0,
+      analyzed: false,
+      wishlist: [],
+      lastGoal: null,
+      streak: { count: 0, lastVisit: null },
+      waitlistEmail: null
+    };
+
+    try {
+      const saved = localStorage.getItem("reign_state");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+        if (state.budget) document.getElementById("budget-input").value = state.budget;
+      }
+    } catch(e) {}
+
+    function saveState() {
+      try { localStorage.setItem("reign_state", JSON.stringify(state)); } catch(e) {}
+    }
+
+    // ============ PARSING ============
+    function parseTransactions(text) {
+      const lines = text.split("\n").map(l => l.trim()).filter(l => l && !l.toLowerCase().includes("example"));
+      const txs = [];
+      for (const line of lines) {
+        let match = line.match(/^(.+?)\s*[-,–]\s*\$?([\d,]+\.?\d*)$/);
+        if (!match) match = line.match(/^(.+?)\s+\$?([\d,]+\.\d{2})$/);
+        if (!match) {
+          const parts = line.split(",").map(p => p.trim().replace(/^"|"$/g, ""));
+          if (parts.length >= 2) {
+            const last = parts[parts.length - 1].replace(/[$,]/g, "");
+            const amt = parseFloat(last);
+            if (!isNaN(amt) && amt > 0) {
+              const merchant = parts.length === 2 ? parts[0] : parts[parts.length - 2];
+              if (merchant && merchant.length > 0) {
+                txs.push({ merchant, amount: amt, category: categorize(merchant) });
+                continue;
+              }
+            }
+          }
+        }
+        if (match) {
+          const merchant = match[1].trim();
+          const amount = parseFloat(match[2].replace(/,/g, ""));
+          if (!isNaN(amount) && amount > 0) {
+            txs.push({ merchant, amount, category: categorize(merchant) });
+          }
+        }
+      }
+      return txs;
+    }
+
+    // ============ ANALYZE ============
+    function analyze() {
+      const text = document.getElementById("tx-input").value.trim();
+      const budget = parseFloat(document.getElementById("budget-input").value) || 0;
+      if (!text) { toast("Add some transactions first", true); return; }
+      const txs = parseTransactions(text);
+      if (txs.length === 0) { toast("Couldn't parse any transactions. Try format: 'Merchant - Amount'", true); return; }
+      state.transactions = txs;
+      state.budget = budget;
+      state.analyzed = true;
+      saveState();
+      renderAll();
+      toast(`Analyzed ${txs.length} transactions`);
+    }
+
+    function renderAll() {
+      renderStats();
+      renderResults();
+      renderInsights();
+      renderLeaks();
+      renderWishlist();
+      renderPersonality();
+      renderTaxes();
+    }
+
+    function renderStats() {
+      const txs = state.transactions;
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      document.getElementById("stat-total").textContent = "$" + fmt(total);
+      document.getElementById("stat-total-sub").textContent = `${txs.length} transaction${txs.length !== 1 ? "s" : ""}`;
+
+      // Time period breakdown
+      const dailyAvg = total / 30;
+      const yearlyProjection = total * 12;
+      const dayEl = document.getElementById("period-day");
+      const monthEl = document.getElementById("period-month");
+      const yearEl = document.getElementById("period-year");
+      if (dayEl) dayEl.textContent = "$" + fmt(dailyAvg);
+      if (monthEl) monthEl.textContent = "$" + fmt(total);
+      if (yearEl) yearEl.textContent = "$" + fmt(yearlyProjection);
+
+      document.getElementById("stat-budget").textContent = "$" + fmt(state.budget || 0);
+      if (state.budget && total > 0) {
+        const pct = (total / state.budget * 100).toFixed(0);
+        document.getElementById("stat-budget-sub").textContent = `${pct}% used this period`;
+      } else {
+        document.getElementById("stat-budget-sub").textContent = state.budget ? "Set" : "Set a budget below";
+      }
+
+      if (txs.length > 0) {
+        const byCat = {};
+        for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+        const top = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+        document.getElementById("stat-top").textContent = top[0];
+        document.getElementById("stat-top-sub").textContent = "$" + fmt(top[1]) + " spent";
+      } else {
+        document.getElementById("stat-top").textContent = "—";
+        document.getElementById("stat-top-sub").textContent = "Awaiting analysis";
+      }
+
+      if (state.budget && total > 0) {
+        const dailyRate = total / 30;
+        const daysToBroke = Math.floor(state.budget / dailyRate);
+        if (daysToBroke < 30) {
+          document.getElementById("stat-reality").textContent = daysToBroke;
+          document.getElementById("stat-reality").className = "text-3xl font-bold danger";
+          document.getElementById("stat-reality-sub").textContent = "Days until budget runs out";
+        } else {
+          document.getElementById("stat-reality").textContent = "On track";
+          document.getElementById("stat-reality").className = "text-3xl font-bold accent-text";
+          document.getElementById("stat-reality-sub").textContent = "You're under budget";
+        }
+      } else {
+        document.getElementById("stat-reality").textContent = "—";
+        document.getElementById("stat-reality").className = "text-3xl font-bold";
+        document.getElementById("stat-reality-sub").textContent = "Days to broke";
+      }
+    }
+
+    let chartInstance = null;
+    function renderResults() {
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        document.getElementById("results-empty").classList.remove("hidden");
+        document.getElementById("results").classList.add("hidden");
+        return;
+      }
+      document.getElementById("results-empty").classList.add("hidden");
+      document.getElementById("results").classList.remove("hidden");
+
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      document.getElementById("tx-count").textContent = `${txs.length} transactions • $${fmt(total)} total`;
+      renderRealityCheck(total);
+
+      const byCat = {};
+      for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+      const labels = Object.keys(byCat);
+      const data = Object.values(byCat);
+      const colors = labels.map(l => CATEGORY_COLORS[l] || "#71717a");
+
+      const ctx = document.getElementById("chart-pie").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: "doughnut",
+        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 8 }] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "65%",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#18181b",
+              borderColor: "#27272a",
+              borderWidth: 1,
+              padding: 12,
+              titleColor: "#fafafa",
+              bodyColor: "#a1a1aa",
+              callbacks: { label: (c) => ` $${fmt(c.parsed)} (${(c.parsed/total*100).toFixed(0)}%)` }
+            }
+          }
+        }
+      });
+
+      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+      const catHTML = sortedCats.map(([cat, amt]) => {
+        const pct = (amt / total * 100).toFixed(0);
+        const color = CATEGORY_COLORS[cat] || "#71717a";
+        return `
+          <div>
+            <div class="flex items-center justify-between text-sm mb-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full" style="background:${color}"></span>
+                <span>${cat}</span>
+              </div>
+              <span class="font-semibold">$${fmt(amt)}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${pct}%; background:${color}"></div>
+            </div>
+            <div class="text-xs text-zinc-500 mt-1">${pct}% of spending</div>
+          </div>
+        `;
+      }).join("");
+      document.getElementById("category-list").innerHTML = catHTML;
+
+      const byMerchant = {};
+      for (const t of txs) byMerchant[t.merchant] = (byMerchant[t.merchant] || 0) + t.amount;
+      const topMerchants = Object.entries(byMerchant).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const merchantHTML = topMerchants.map(([m, amt]) => {
+        const cat = categorize(m);
+        const color = CATEGORY_COLORS[cat] || "#71717a";
+        const pct = (amt / total * 100).toFixed(0);
+        return `
+          <div class="flex items-center gap-3 p-3 rounded-lg panel-hover">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:${color}30; color:${color}">${m[0].toUpperCase()}</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">${m}</div>
+              <div class="text-xs text-zinc-500">${cat} • ${pct}% of total</div>
+            </div>
+            <div class="font-semibold">$${fmt(amt)}</div>
+          </div>
+        `;
+      }).join("");
+      document.getElementById("merchant-list").innerHTML = merchantHTML;
+    }
+
+    function renderRealityCheck(total) {
+      const banner = document.getElementById("reality-banner");
+      const text = document.getElementById("reality-text");
+      if (!state.budget) {
+        text.innerHTML = `You spent <span class="accent-text font-bold">$${fmt(total)}</span> across ${state.transactions.length} transactions. Set a monthly budget to get a real reality check.`;
+        banner.style.borderLeftColor = "var(--accent)";
+        return;
+      }
+      const dailyRate = total / 30;
+      const projected = dailyRate * 30;
+      const over = projected - state.budget;
+      if (over > 0) {
+        const daysToBroke = Math.floor(state.budget / dailyRate);
+        text.innerHTML = `At your current pace you'll spend <span class="danger font-bold">$${fmt(projected)}</span> this month — that's <span class="danger font-bold">$${fmt(over)} over</span> your $${fmt(state.budget)} budget. You'll be eating ramen by day ${daysToBroke}. Time to slow down.`;
+        banner.style.borderLeftColor = "#ef4444";
+      } else if (over > -100) {
+        text.innerHTML = `You're cutting it close. Projected: <span class="warn font-bold">$${fmt(projected)}</span> vs $${fmt(state.budget)} budget. One impulse buy and you're over.`;
+        banner.style.borderLeftColor = "#f59e0b";
+      } else {
+        text.innerHTML = `Nice. You're on pace for <span class="accent-text font-bold">$${fmt(projected)}</span>, which is <span class="accent-text font-bold">$${fmt(-over)} under</span> your budget. Keep it up.`;
+        banner.style.borderLeftColor = "var(--accent)";
+      }
+    }
+
+    // ============ INSIGHTS ============
+    function renderInsights() {
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        document.getElementById("insights-empty").classList.remove("hidden");
+        document.getElementById("insights-content").classList.add("hidden");
+        return;
+      }
+      document.getElementById("insights-empty").classList.add("hidden");
+      document.getElementById("insights-content").classList.remove("hidden");
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      const byCat = {};
+      for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+      const insights = generateInsights(txs, byCat, total);
+      const html = insights.map(i => `
+        <div class="panel p-5 fade-in">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${i.color}20; color:${i.color}">${i.icon}</div>
+            <div class="flex-1">
+              <div class="font-semibold mb-1">${i.title}</div>
+              <div class="text-sm text-zinc-400 leading-relaxed">${i.body}</div>
+              ${i.tip ? `<div class="mt-3 pt-3 border-t border-zinc-800 text-xs text-zinc-500"><span class="text-zinc-300 font-medium">Tip:</span> ${i.tip}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join("");
+      document.getElementById("insights-content").innerHTML = html;
+    }
+
+    function generateInsights(txs, byCat, total) {
+      const insights = [];
+      const food = byCat["Food & Dining"] || 0;
+      const groceries = byCat["Groceries"] || 0;
+      const subs = byCat["Subscriptions"] || 0;
+      const shopping = byCat["Shopping"] || 0;
+
+      if (food > groceries * 2 && food > 50) {
+        insights.push({
+          color: "#f59e0b",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/></svg>',
+          title: "Eating out ≫ groceries",
+          body: `You spent <b>$${fmt(food)}</b> on takeout and restaurants vs <b>$${fmt(groceries)}</b> on groceries. That's a ${(food/Math.max(groceries,1)).toFixed(1)}x ratio — typical "I'll cook tomorrow" energy.`,
+          tip: "If you cut takeout in half, you'd save ~$" + fmt(food/2) + " a month. That's a flight."
+        });
+      }
+      if (subs > 30) {
+        insights.push({
+          color: "#ec4899",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><path d="M12 6v6l4 2"/></svg>',
+          title: "Subscription stack is bleeding",
+          body: `<b>$${fmt(subs)}</b> in subscriptions this period. That's $${fmt(subs * 12)} a year. Audit them — there's almost certainly one you forgot you're paying for.`,
+          tip: "Cancel anything you haven't actively used in 30 days. You can always re-subscribe."
+        });
+      }
+      if (shopping > total * 0.25 && shopping > 100) {
+        insights.push({
+          color: "#a855f7",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+          title: "Shopping is your biggest leak",
+          body: `Shopping ate <b>${(shopping/total*100).toFixed(0)}%</b> of your spending — $${fmt(shopping)}. Most "deals" you bought weren't deals. They were dopamine.`,
+          tip: "Try the 48-hour rule: anything over $50, wait 2 days before buying. You'll skip half of them."
+        });
+      }
+      const biggest = [...txs].sort((a, b) => b.amount - a.amount)[0];
+      if (biggest && biggest.amount > total * 0.15) {
+        insights.push({
+          color: "#06b6d4",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+          title: "One transaction dominates",
+          body: `<b>${biggest.merchant}</b> at <b>$${fmt(biggest.amount)}</b> was ${(biggest.amount/total*100).toFixed(0)}% of your entire spending. Was it worth it?`,
+          tip: "Big transactions deserve their own reflection. Add it to your Reverse Wishlist next time and sleep on it first."
+        });
+      }
+      const avg = total / txs.length;
+      if (avg < 20 && txs.length > 5) {
+        insights.push({
+          color: "#6366f1",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+          title: "Death by a thousand small purchases",
+          body: `Average transaction: <b>$${fmt(avg)}</b>. Small purchases feel free in the moment, but ${txs.length} of them added up to $${fmt(total)}.`,
+          tip: "Small spending is the hardest to track. This is why budgets exist."
+        });
+      }
+      if (state.budget && total < state.budget * 0.7) {
+        insights.push({
+          color: "#6366f1",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+          title: "You're crushing it",
+          body: `Spent $${fmt(total)} of your $${fmt(state.budget)} budget. <b>$${fmt(state.budget - total)} left</b> in the tank. That's the kind of month that compounds.`,
+          tip: "Move the surplus into savings before next month or it'll find a way to disappear."
+        });
+      }
+      if (insights.length === 0) {
+        insights.push({
+          color: "#6366f1",
+          icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+          title: "Solid spending pattern",
+          body: `Nothing alarming jumps out. You spent $${fmt(total)} across ${txs.length} transactions in a balanced way.`,
+          tip: "Add more data to get sharper insights — a full month is best."
+        });
+      }
+      return insights;
+    }
+
+    // ============ GOAL PLANNER ============
+    const GOAL_LABELS = {
+      house: { name: "House Down Payment", emoji: "🏠", typical: 40000 },
+      car: { name: "New Car", emoji: "🚗", typical: 18000 },
+      emergency: { name: "Emergency Fund", emoji: "🛟", typical: 9000 },
+      vacation: { name: "Vacation", emoji: "✈️", typical: 3500 },
+      debt: { name: "Pay Off Debt", emoji: "💳", typical: 6000 },
+      invest: { name: "Investment Lump Sum", emoji: "📈", typical: 10000 },
+      custom: { name: "Custom Goal", emoji: "⭐", typical: 5000 }
+    };
+
+    function calculateGoal() {
+      const type = document.getElementById("goal-type").value;
+      const target = parseFloat(document.getElementById("goal-amount").value);
+      const income = parseFloat(document.getElementById("goal-income").value) || 0;
+
+      if (!target || target <= 0) {
+        toast("Enter your target amount first", true);
+        return;
+      }
+
+      const txs = state.transactions;
+      const monthlySpend = txs.reduce((s, t) => s + t.amount, 0);
+
+      if (monthlySpend === 0 && !income) {
+        toast("Add transactions on the Analyze tab first, or enter your income", true);
+        return;
+      }
+
+      let monthlySavings = 0;
+      let basis = "";
+
+      if (income > 0 && monthlySpend > 0) {
+        monthlySavings = income - monthlySpend;
+        basis = `Based on $${fmt(income)}/mo income minus $${fmt(monthlySpend)}/mo spending`;
+      } else if (state.budget > 0 && monthlySpend > 0) {
+        monthlySavings = state.budget - monthlySpend;
+        basis = `Based on your $${fmt(state.budget)} budget minus $${fmt(monthlySpend)} spending`;
+      } else if (income > 0) {
+        monthlySavings = income * 0.2;
+        basis = `Estimated 20% of your $${fmt(income)} income`;
+      } else {
+        monthlySavings = state.budget * 0.2 || 200;
+        basis = `Estimated savings — add transactions for a real number`;
+      }
+
+      state.lastGoal = { type, target, income, monthlySavings };
+      saveState();
+      renderGoalResult(type, target, monthlySavings, basis, monthlySpend, income);
+    }
+
+    function renderGoalResult(type, target, monthlySavings, basis, monthlySpend, income) {
+      document.getElementById("goal-empty").classList.add("hidden");
+      document.getElementById("goal-result").classList.remove("hidden");
+
+      const label = GOAL_LABELS[type];
+      const positive = monthlySavings > 0;
+      const months = positive ? Math.ceil(target / monthlySavings) : Infinity;
+      const years = months / 12;
+      const eta = new Date();
+      eta.setMonth(eta.getMonth() + months);
+      const etaStr = eta.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+      const txs = state.transactions;
+      const byCat = {};
+      for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+      const topCat = sortedCats[0];
+
+      let timelineHTML = "";
+      if (!positive) {
+        timelineHTML = `
+          <div class="panel p-6 border-l-4" style="border-left-color: #ef4444;">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">The honest truth</div>
+            <div class="text-2xl font-bold danger mb-2">You're spending more than you make.</div>
+            <p class="text-sm text-zinc-400 leading-relaxed">${basis}. At this rate you can't save anything — let alone $${fmt(target)}. <span class="text-white">Cutting expenses isn't optional anymore.</span></p>
+          </div>
+        `;
+      } else {
+        const timeStr = months >= 24 ? `${years.toFixed(1)} years` : `${months} months`;
+        const colorTier = months <= 12 ? "var(--accent)" : months <= 36 ? "#f59e0b" : "#ef4444";
+        const verdict = months <= 12
+          ? "Realistic. This is doable."
+          : months <= 36
+          ? "Reachable, but you'll need discipline."
+          : "Long road ahead. Cut expenses or raise income.";
+        timelineHTML = `
+          <div class="panel p-6 border-l-4" style="border-left-color: ${colorTier};">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your path to ${label.emoji} ${label.name}</div>
+            <div class="flex items-baseline gap-3 flex-wrap mb-3">
+              <div class="text-4xl font-bold" style="color:${colorTier}">${timeStr}</div>
+              <div class="text-zinc-400 text-sm">to save <b class="text-white">$${fmt(target)}</b></div>
+            </div>
+            <div class="text-sm text-zinc-300 mb-1">ETA: <b>${etaStr}</b></div>
+            <div class="text-sm text-zinc-500">${basis}</div>
+            <div class="mt-4 pt-4 border-t border-zinc-800 text-sm font-medium" style="color:${colorTier}">${verdict}</div>
+          </div>
+        `;
+      }
+
+      // Math breakdown
+      const mathHTML = positive ? `
+        <div class="panel p-6">
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-3">The Math</div>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Target</span>
+              <span class="font-bold text-lg">$${fmt(target)}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Monthly savings (current pace)</span>
+              <span class="font-bold accent-text">$${fmt(monthlySavings)}</span>
+            </div>
+            ${income > 0 ? `<div class="flex items-center justify-between">
+              <span class="text-zinc-400">Savings rate</span>
+              <span class="font-medium">${(monthlySavings/income*100).toFixed(0)}% of income</span>
+            </div>` : ''}
+            <div class="flex items-center justify-between border-t border-zinc-800 pt-3">
+              <span class="text-zinc-400">Months needed</span>
+              <span class="font-bold text-lg">${months}</span>
+            </div>
+          </div>
+        </div>
+      ` : '';
+
+      // Optimization tip
+      let optHTML = "";
+      if (positive && topCat && topCat[1] > 50) {
+        const cutAmount = topCat[1] * 0.2;
+        const newSavings = monthlySavings + cutAmount;
+        const newMonths = Math.ceil(target / newSavings);
+        const saved = months - newMonths;
+        if (saved >= 1) {
+          optHTML = `
+            <div class="panel p-6">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.1); color:var(--accent)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold mb-1">Want to get there faster?</div>
+                  <div class="text-sm text-zinc-400 leading-relaxed">
+                    Your biggest spending category is <b>${topCat[0]}</b> at $${fmt(topCat[1])}/month.
+                    If you cut that by just <b class="accent-text">20%</b>, you'd save an extra <b class="accent-text">$${fmt(cutAmount)}/month</b>
+                    and reach your goal in <b class="accent-text">${newMonths} months</b> — that's <b class="accent-text">${saved} ${saved === 1 ? 'month' : 'months'} sooner</b>.
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // Brutal context
+      const contextHTML = positive ? `
+        <div class="panel p-6">
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-3">For Perspective</div>
+          <div class="space-y-3 text-sm text-zinc-400">
+            ${type === 'house' ? `<p>$${fmt(target)} is roughly a <b class="text-white">10-20% down payment on a $${fmt(target*5)}-$${fmt(target*10)}</b> home.</p>` : ''}
+            ${type === 'emergency' ? `<p>Most experts recommend <b class="text-white">3-6 months of expenses</b> as an emergency fund. At your spending rate, that's $${fmt(monthlySpend*3)}-$${fmt(monthlySpend*6)}.</p>` : ''}
+            ${type === 'car' ? `<p>$${fmt(target)} is a solid budget for a <b class="text-white">reliable used car</b>. Consider 20% down on a financed car if you don't want to wait.</p>` : ''}
+            ${type === 'vacation' ? `<p>That's the kind of trip that ends up on your camera roll for years. Worth saving for slowly.</p>` : ''}
+            ${type === 'debt' ? `<p>Every month you delay paying off debt, interest eats more of your future money. <b class="text-white">Speed matters here.</b></p>` : ''}
+            ${type === 'invest' ? `<p>$${fmt(target)} invested at 7% average return becomes ~$${fmt(target*1.97)} in 10 years. <b class="text-white">Time is the move.</b></p>` : ''}
+            <p class="pt-2 border-t border-zinc-800">A small win each month compounds. ${months} months feels long now, but it's just <b class="text-white">${months} paychecks</b> away.</p>
+          </div>
+        </div>
+      ` : '';
+
+      document.getElementById("goal-result").innerHTML = timelineHTML + mathHTML + optHTML + contextHTML;
+    }
+
+    // ============ MONEY LEAKS ============
+    function renderLeaks() {
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        document.getElementById("leaks-empty").classList.remove("hidden");
+        document.getElementById("leaks-content").classList.add("hidden");
+        return;
+      }
+      const subs = txs.filter(t => t.category === "Subscriptions");
+      const byMerchant = {};
+      for (const t of txs) {
+        if (!byMerchant[t.merchant]) byMerchant[t.merchant] = [];
+        byMerchant[t.merchant].push(t);
+      }
+      const recurring = Object.entries(byMerchant).filter(([m, ts]) => ts.length >= 2);
+      if (subs.length === 0 && recurring.length === 0) {
+        document.getElementById("leaks-empty").classList.remove("hidden");
+        document.getElementById("leaks-content").classList.add("hidden");
+        document.getElementById("leaks-empty").querySelector("h3").textContent = "No leaks found 🎉";
+        document.getElementById("leaks-empty").querySelector("p").textContent = "No recurring subscriptions or duplicate spending detected. Nice.";
+        return;
+      }
+      document.getElementById("leaks-empty").classList.add("hidden");
+      document.getElementById("leaks-content").classList.remove("hidden");
+      const subsTotal = subs.reduce((s, t) => s + t.amount, 0);
+      const annualSubs = subsTotal * 12;
+      let html = "";
+      if (subs.length > 0) {
+        html += `
+          <div class="panel p-6 fade-in">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <div class="text-xs text-zinc-500 uppercase tracking-wider">Recurring Subscriptions</div>
+                <div class="text-2xl font-bold mt-1">$${fmt(subsTotal)}<span class="text-sm font-normal text-zinc-500">/month</span></div>
+                <div class="text-xs text-zinc-500 mt-1">~$${fmt(annualSubs)}/year</div>
+              </div>
+              <div class="badge" style="background:rgba(236,72,153,0.1); color:#ec4899; border-color:rgba(236,72,153,0.3);">${subs.length} found</div>
+            </div>
+            <div class="space-y-2">
+              ${subs.map(s => `
+                <div class="flex items-center justify-between p-3 rounded-lg" style="background:#0a0a0c">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(236,72,153,0.1); color:#ec4899; font-weight:bold">${s.merchant[0].toUpperCase()}</div>
+                    <div>
+                      <div class="font-medium text-sm">${s.merchant}</div>
+                      <div class="text-xs text-zinc-500">$${fmt(s.amount * 12)}/year</div>
+                    </div>
+                  </div>
+                  <div class="font-semibold text-sm">$${fmt(s.amount)}/mo</div>
+                </div>
+              `).join("")}
+            </div>
+            <div class="mt-4 pt-4 border-t border-zinc-800 text-xs text-zinc-500">
+              <span class="text-zinc-300 font-medium">Action:</span> Cancel any subscription you haven't actively used in 30 days. Average person has 4 subscriptions they forgot about.
+            </div>
+          </div>
+        `;
+      }
+      if (recurring.length > 0) {
+        html += `
+          <div class="panel p-6 fade-in">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Repeat Spending Patterns</div>
+            <div class="text-sm text-zinc-400 mb-4">You bought from these merchants more than once:</div>
+            <div class="space-y-2">
+              ${recurring.map(([m, ts]) => {
+                const total = ts.reduce((s, t) => s + t.amount, 0);
+                const cat = categorize(m);
+                const color = CATEGORY_COLORS[cat] || "#71717a";
+                return `
+                  <div class="flex items-center justify-between p-3 rounded-lg" style="background:#0a0a0c">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:${color}20; color:${color}; font-weight:bold">${m[0].toUpperCase()}</div>
+                      <div>
+                        <div class="font-medium text-sm">${m}</div>
+                        <div class="text-xs text-zinc-500">${ts.length} transactions • ${cat}</div>
+                      </div>
+                    </div>
+                    <div class="font-semibold text-sm">$${fmt(total)}</div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+      document.getElementById("leaks-content").innerHTML = html;
+    }
+
+    // ============ WISHLIST ============
+    function addWishlistItem() {
+      const name = document.getElementById("wl-name").value.trim();
+      const price = parseFloat(document.getElementById("wl-price").value);
+      const url = document.getElementById("wl-url").value.trim();
+      if (!name || !price || price <= 0) { toast("Add a name and price first", true); return; }
+      state.wishlist.push({
+        id: Date.now(), name, price, url,
+        status: "pending",
+        addedAt: new Date().toISOString()
+      });
+      saveState();
+      renderWishlist();
+      document.getElementById("wl-name").value = "";
+      document.getElementById("wl-price").value = "";
+      document.getElementById("wl-url").value = "";
+      toast(`Added "${name}". Sleep on it.`);
+    }
+
+    function setWishlistStatus(id, status) {
+      const item = state.wishlist.find(i => i.id === id);
+      if (item) {
+        item.status = status;
+        item.decidedAt = new Date().toISOString();
+        saveState();
+        renderWishlist();
+        if (status === "didnt_buy") toast(`+$${fmt(item.price)} saved. You're winning.`);
+        if (status === "bought") toast(`Hope it was worth it.`);
+      }
+    }
+
+    function deleteWishlistItem(id) {
+      state.wishlist = state.wishlist.filter(i => i.id !== id);
+      saveState();
+      renderWishlist();
+    }
+
+    function renderWishlist() {
+      const items = state.wishlist;
+      const saved = items.filter(i => i.status === "didnt_buy").reduce((s, i) => s + i.price, 0);
+      const bought = items.filter(i => i.status === "bought").reduce((s, i) => s + i.price, 0);
+      document.getElementById("wl-saved").textContent = "$" + fmt(saved);
+      const subtext = bought > 0
+        ? `Saved $${fmt(saved)} • Spent $${fmt(bought)} on ${items.filter(i => i.status === "bought").length} items`
+        : "By not buying things you almost bought";
+      document.getElementById("wl-saved-sub").textContent = subtext;
+      if (items.length === 0) {
+        document.getElementById("wl-empty").classList.remove("hidden");
+        document.getElementById("wl-list").classList.add("hidden");
+        return;
+      }
+      document.getElementById("wl-empty").classList.add("hidden");
+      document.getElementById("wl-list").classList.remove("hidden");
+      const sorted = [...items].sort((a, b) => {
+        const order = { pending: 0, didnt_buy: 1, bought: 2 };
+        return order[a.status] - order[b.status];
+      });
+      const html = sorted.map(item => {
+        const daysSince = Math.floor((Date.now() - new Date(item.addedAt).getTime()) / (1000 * 60 * 60 * 24));
+        const cooldownActive = daysSince < 2 && item.status === "pending";
+        const cooldownRemaining = 2 - daysSince;
+        let statusBadge = "";
+        let actions = "";
+        let opacity = "";
+        if (item.status === "pending") {
+          statusBadge = cooldownActive
+            ? `<span class="badge" style="background:rgba(245,158,11,0.1); color:#f59e0b; border-color:rgba(245,158,11,0.3);">Cooling down — ${cooldownRemaining}d left</span>`
+            : `<span class="badge">Decision time</span>`;
+          actions = `
+            <button onclick="setWishlistStatus(${item.id}, 'didnt_buy')" class="btn-primary px-3 py-1.5 rounded-lg text-xs">Skipped it</button>
+            <button onclick="setWishlistStatus(${item.id}, 'bought')" class="btn-ghost px-3 py-1.5 rounded-lg text-xs">Bought it</button>
+          `;
+        } else if (item.status === "didnt_buy") {
+          statusBadge = `<span class="badge">Saved $${fmt(item.price)}</span>`;
+          opacity = "opacity-60";
+        } else {
+          statusBadge = `<span class="badge" style="background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.3);">Bought</span>`;
+          opacity = "opacity-50";
+        }
+        return `
+          <div class="panel p-4 ${opacity} fade-in">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold truncate">${item.name}</span>
+                  ${statusBadge}
+                </div>
+                <div class="flex items-center gap-3 text-sm text-zinc-500">
+                  <span class="font-medium accent-text">$${fmt(item.price)}</span>
+                  <span>•</span>
+                  <span>${daysSince === 0 ? "Today" : daysSince + "d ago"}</span>
+                  ${item.url ? `<span>•</span><a href="${item.url}" target="_blank" class="hover:text-zinc-300">Link ↗</a>` : ""}
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                ${actions}
+                <button onclick="deleteWishlistItem(${item.id})" class="text-zinc-600 hover:text-zinc-400 p-1" title="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      document.getElementById("wl-list").innerHTML = html;
+    }
+
+    // ============ TABS ============
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      document.getElementById("tab-" + tab).classList.remove("hidden");
+      document.getElementById("tab-" + tab).classList.add("fade-in");
+      document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+      document.querySelector(`.tab-button[data-tab="${tab}"]`).classList.add("active");
+    }
+
+    // ============ MODALS ============
+    function showModal(name) {
+      document.getElementById("modal-" + name).classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+    function hideModal(name) {
+      document.getElementById("modal-" + name).classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+    function closeModalOnBackdrop(e, name) {
+      if (e.target.classList.contains("modal-backdrop")) hideModal(name);
+    }
+    const STRIPE_LINKS = {
+      Basic: "https://buy.stripe.com/fZueV6gv9gWtc1b0wca3u00",
+      Pro: "https://buy.stripe.com/4gM5kwfr549HaX7ceUa3u01"
+    };
+    function upgradeClicked(tier) {
+      hideModal("pricing");
+      const url = STRIPE_LINKS[tier] || STRIPE_LINKS.Basic;
+      window.open(url, "_blank");
+      toast(`Opening ${tier || "Basic"} checkout...`);
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        ["pricing", "about", "privacy", "tip", "afford", "receipt"].forEach(m => hideModal(m));
+      }
+    });
+
+    // ============ CSV UPLOAD ============
+    function handleCSVUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target.result;
+        const lines = text.split("\n").filter(l => l.trim());
+        if (lines.length < 2) { toast("CSV looks empty", true); return; }
+        const header = lines[0].toLowerCase();
+        const rows = lines.slice(1);
+        const cols = header.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+        const descIdx = cols.findIndex(c => /description|merchant|payee|name|memo/.test(c));
+        const amtIdx = cols.findIndex(c => /amount|debit|charge|transaction/.test(c));
+        let parsed = [];
+        if (descIdx !== -1 && amtIdx !== -1) {
+          for (const row of rows) {
+            const cells = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || row.split(",");
+            const desc = (cells[descIdx] || "").replace(/^"|"$/g, "").trim();
+            const rawAmt = (cells[amtIdx] || "").replace(/^"|"$/g, "").trim().replace(/[$,]/g, "");
+            const amt = Math.abs(parseFloat(rawAmt));
+            if (desc && !isNaN(amt) && amt > 0) parsed.push(`${desc} - ${amt.toFixed(2)}`);
+          }
+        } else {
+          parsed = rows;
+        }
+        if (parsed.length === 0) { toast("Couldn't parse CSV. Try pasting transactions instead.", true); return; }
+        document.getElementById("tx-input").value = parsed.join("\n");
+        toast(`Loaded ${parsed.length} rows from CSV`);
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    }
+
+    function exportCSV() {
+      if (state.transactions.length === 0) { toast("Nothing to export yet", true); return; }
+      // Generate full Excel workbook with multiple sheets
+      try {
+        const wb = XLSX.utils.book_new();
+        const txs = state.transactions;
+        const total = txs.reduce((s, t) => s + t.amount, 0);
+        const byCat = {};
+        for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+
+        // Sheet 1: Summary
+        const summary = [
+          ["Reign Export", ""],
+          ["Generated", new Date().toLocaleDateString()],
+          ["", ""],
+          ["Total Spent", "$" + total.toFixed(2)],
+          ["Transactions", txs.length],
+          ["Monthly Budget", "$" + (state.budget || 0).toFixed(2)],
+          ["Avg Transaction", "$" + (total/txs.length).toFixed(2)],
+          ["", ""],
+          ["By Category", "Amount", "% of Total"],
+          ...Object.entries(byCat).sort((a,b) => b[1]-a[1]).map(([cat, amt]) => [cat, "$" + amt.toFixed(2), (amt/total*100).toFixed(1) + "%"])
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
+
+        // Sheet 2: All Transactions
+        const txData = [["Merchant", "Category", "Amount", "Tax Status"]];
+        for (const t of txs) txData.push([t.merchant, t.category, t.amount, t.taxCategory || "Personal"]);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(txData), "Transactions");
+
+        // Sheet 3: Tax-Deductible
+        const deductible = txs.filter(t => t.taxCategory && t.taxCategory !== "Personal");
+        if (deductible.length > 0) {
+          const taxData = [["Merchant", "Tax Category", "Amount", "Notes"]];
+          for (const t of deductible) taxData.push([t.merchant, t.taxCategory, t.amount, ""]);
+          const taxTotal = deductible.reduce((s, t) => s + t.amount, 0);
+          taxData.push(["", "TOTAL DEDUCTIBLE", taxTotal, ""]);
+          taxData.push(["", "ESTIMATED SAVINGS (25%)", taxTotal * 0.25, ""]);
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(taxData), "Tax Deductibles");
+        }
+
+        // Sheet 4: By Category
+        const catData = [["Category", "Amount", "Transaction Count", "% of Total"]];
+        for (const [cat, amt] of Object.entries(byCat).sort((a,b) => b[1]-a[1])) {
+          const count = txs.filter(t => t.category === cat).length;
+          catData.push([cat, amt, count, (amt/total*100).toFixed(1) + "%"]);
+        }
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(catData), "By Category");
+
+        XLSX.writeFile(wb, `finance-ai-${new Date().toISOString().split("T")[0]}.xlsx`);
+        toast("Exported full Excel workbook 📊");
+      } catch (err) {
+        // Fallback to CSV
+        const rows = [["Merchant", "Category", "Amount"]];
+        for (const t of state.transactions) rows.push([t.merchant, t.category, t.amount]);
+        const csv = rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `finance-ai-export-${Date.now()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("Exported to CSV");
+      }
+    }
+
+    function exportTaxXLSX() {
+      const deductible = state.transactions.filter(t => t.taxCategory && t.taxCategory !== "Personal");
+      if (deductible.length === 0) {
+        toast("Tag some transactions as Business/Medical/Charity first", true);
+        return;
+      }
+      exportCSV();
+    }
+
+    // ============ TAX TRACKING ============
+    function setTaxCategory(idx, category) {
+      if (state.transactions[idx]) {
+        state.transactions[idx].taxCategory = category;
+        saveState();
+        renderTaxes();
+        renderStats();
+      }
+    }
+
+    function autoTagDeductibles() {
+      const txs = state.transactions;
+      let tagged = 0;
+      const businessKeywords = ["uber", "lyft", "shell", "exxon", "chevron", "office", "supplies", "staples", "fedex", "ups", "github", "notion", "figma", "adobe", "zoom"];
+      const medicalKeywords = ["pharmacy", "cvs", "walgreens", "doctor", "medical", "dental", "clinic", "hospital"];
+      for (const t of txs) {
+        if (t.taxCategory) continue;
+        const m = t.merchant.toLowerCase();
+        if (medicalKeywords.some(k => m.includes(k))) {
+          t.taxCategory = "Medical";
+          tagged++;
+        } else if (businessKeywords.some(k => m.includes(k))) {
+          t.taxCategory = "Business";
+          tagged++;
+        }
+      }
+      saveState();
+      renderTaxes();
+      toast(tagged > 0 ? `Auto-tagged ${tagged} possible deductions` : "No obvious deductions found");
+    }
+
+    function renderTaxes() {
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        document.getElementById("taxes-empty").classList.remove("hidden");
+        document.getElementById("taxes-content").classList.add("hidden");
+        return;
+      }
+      document.getElementById("taxes-empty").classList.add("hidden");
+      document.getElementById("taxes-content").classList.remove("hidden");
+
+      const deductible = txs.filter(t => t.taxCategory && t.taxCategory !== "Personal");
+      const total = deductible.reduce((s, t) => s + t.amount, 0);
+      const savings = total * 0.25;
+      const byCat = {};
+      for (const t of deductible) byCat[t.taxCategory] = (byCat[t.taxCategory] || 0) + t.amount;
+
+      document.getElementById("tax-total").textContent = "$" + fmt(total);
+      const subtext = Object.entries(byCat).map(([k, v]) => `${k}: $${fmt(v)}`).join(" • ");
+      document.getElementById("tax-total-sub").textContent = subtext || "Tag transactions below";
+      document.getElementById("tax-savings").textContent = "$" + fmt(savings);
+      document.getElementById("tax-count").textContent = deductible.length;
+      document.getElementById("tax-count-sub").textContent = `of ${txs.length} total`;
+
+      const TAX_OPTIONS = ["Personal", "Business", "Medical", "Charity", "Education"];
+      const TAX_COLORS = {
+        "Personal": "#71717a",
+        "Business": "#6366f1",
+        "Medical": "#ef4444",
+        "Charity": "#a855f7",
+        "Education": "#06b6d4"
+      };
+
+      const html = txs.map((t, idx) => {
+        const current = t.taxCategory || "Personal";
+        const color = TAX_COLORS[current];
+        const isDeductible = current !== "Personal";
+        return `
+          <div class="flex items-center gap-3 p-3 rounded-lg ${isDeductible ? '' : ''}" style="background:#0a0a0c; ${isDeductible ? 'border-left: 3px solid ' + color : ''}">
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">${t.merchant}</div>
+              <div class="text-xs text-zinc-500">${t.category} • $${fmt(t.amount)}</div>
+            </div>
+            <select onchange="setTaxCategory(${idx}, this.value)" class="input px-3 py-1.5 text-xs" style="color:${color}; border-color:${color}40;">
+              ${TAX_OPTIONS.map(opt => `<option value="${opt}" ${current === opt ? "selected" : ""}>${opt}</option>`).join("")}
+            </select>
+          </div>
+        `;
+      }).join("");
+      document.getElementById("tax-list").innerHTML = html;
+    }
+
+    // ============ RECEIPT SCANNER (DEMO) ============
+    function handleReceiptUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const result = document.getElementById("receipt-result");
+      result.classList.remove("hidden");
+      result.innerHTML = `
+        <div class="panel p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="skeleton w-10 h-10 rounded-lg"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton h-3 w-32 rounded"></div>
+              <div class="skeleton h-2 w-20 rounded"></div>
+            </div>
+          </div>
+          <div class="text-xs text-zinc-500 mt-2">🤖 Reading receipt with AI Vision...</div>
+        </div>
+      `;
+
+      // Simulate AI processing delay
+      setTimeout(() => {
+        const samples = [
+          { merchant: "Whole Foods Market", amount: 67.42, category: "Groceries", date: "Today" },
+          { merchant: "Starbucks", amount: 8.95, category: "Food & Dining", date: "Today" },
+          { merchant: "Target", amount: 124.18, category: "Shopping", date: "Today" },
+          { merchant: "Shell Gas Station", amount: 52.30, category: "Transportation", date: "Today" },
+          { merchant: "Chipotle", amount: 14.65, category: "Food & Dining", date: "Today" }
+        ];
+        const r = samples[Math.floor(Math.random() * samples.length)];
+        result.innerHTML = `
+          <div class="panel p-5 fade-in" style="border-color:rgba(99,102,241,0.3); background:rgba(99,102,241,0.04);">
+            <div class="flex items-center gap-2 text-xs accent-text font-medium mb-3">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+              Receipt scanned
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zinc-500 uppercase tracking-wider">Merchant</span>
+                <span class="font-medium">${r.merchant}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zinc-500 uppercase tracking-wider">Amount</span>
+                <span class="font-bold text-lg">$${r.amount}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zinc-500 uppercase tracking-wider">Category</span>
+                <span class="text-sm">${r.category}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zinc-500 uppercase tracking-wider">Date</span>
+                <span class="text-sm">${r.date}</span>
+              </div>
+            </div>
+            <button onclick="addScannedReceipt('${r.merchant}', ${r.amount})" class="btn-primary w-full py-2.5 rounded-lg text-sm mt-4">Add to transactions</button>
+          </div>
+        `;
+      }, 1200);
+      e.target.value = "";
+    }
+
+    function addScannedReceipt(merchant, amount) {
+      state.transactions.push({
+        merchant, amount,
+        category: categorize(merchant),
+        scannedFromReceipt: true
+      });
+      state.analyzed = true;
+      saveState();
+      renderAll();
+      hideModal("receipt");
+      toast(`Added: ${merchant} for $${fmt(amount)}`);
+      // Update the textarea so users see the new entry
+      const current = document.getElementById("tx-input").value;
+      const newLine = `${merchant} - ${amount}`;
+      document.getElementById("tx-input").value = current ? current + "\n" + newLine : newLine;
+    }
+
+    function loadSampleData() {
+      const sample = `Starbucks - 6.75
+DoorDash - 38.40
+Uber - 24.50
+Amazon - 89.99
+Netflix - 15.99
+Spotify - 11.99
+Whole Foods - 142.30
+Chipotle - 14.20
+Target - 67.45
+Shell Gas - 52.00
+McDonalds - 9.85
+DoorDash - 42.18
+Amazon - 134.20
+Apple Music - 10.99
+Uber - 18.30
+Trader Joes - 78.50
+Starbucks - 5.45
+Best Buy - 249.99
+Chipotle - 16.40
+Netflix - 15.99
+Planet Fitness - 24.99
+Doordash - 31.20
+Amazon - 56.78
+Shell Gas - 48.50
+Starbucks - 7.20`;
+      document.getElementById("tx-input").value = sample;
+      if (!document.getElementById("budget-input").value) document.getElementById("budget-input").value = "1500";
+      analyze();
+    }
+
+    // ============ HELPERS ============
+    function fmt(n) {
+      return Number(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+    function clearAll() {
+      if (!confirm("Clear all transactions and analysis?")) return;
+      state.transactions = [];
+      state.analyzed = false;
+      saveState();
+      document.getElementById("tx-input").value = "";
+      renderAll();
+      toast("Cleared");
+    }
+    function scrollTo(sel) {
+      const el = document.querySelector(sel);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    function toast(msg, isError) {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = msg;
+      if (isError) t.style.borderLeftColor = "#ef4444";
+      document.getElementById("toast-container").appendChild(t);
+      setTimeout(() => {
+        t.style.animation = "slideIn 200ms ease reverse";
+        setTimeout(() => t.remove(), 200);
+      }, 2500);
+    }
+
+    // ============ AFFORDABILITY CALCULATOR ============
+    function recalculateAffordability() {
+      const price = parseFloat(document.getElementById("afford-price").value);
+      const result = document.getElementById("afford-result");
+      const empty = document.getElementById("afford-empty");
+      const saveBtn = document.getElementById("afford-save-btn");
+
+      if (!price || price <= 0) {
+        result.classList.add("hidden");
+        empty.classList.remove("hidden");
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = "0.5";
+        return;
+      }
+      empty.classList.add("hidden");
+      result.classList.remove("hidden");
+      saveBtn.disabled = false;
+      saveBtn.style.opacity = "1";
+
+      const monthlySpend = state.transactions.reduce((s, t) => s + t.amount, 0);
+      const remaining = state.budget - monthlySpend;
+      const futureValue30 = price * Math.pow(1.07, 30);
+      const futureValue10 = price * Math.pow(1.07, 10);
+
+      let verdict, color, verdictText, advice;
+      if (!state.budget || monthlySpend === 0) {
+        verdict = "❓";
+        color = "#71717a";
+        verdictText = "Add transactions first";
+        advice = "Use the Analyze tab to load your spending, then come back. We need data to give you a real answer.";
+      } else if (remaining <= 0) {
+        verdict = "NO";
+        color = "#ef4444";
+        verdictText = "Absolutely not";
+        advice = `You're already <b>$${fmt(-remaining)} over</b> your budget. This isn't a question of whether you can afford it — you can't afford <i>anything</i> right now.`;
+      } else if (price > remaining) {
+        verdict = "NO";
+        color = "#ef4444";
+        verdictText = "Don't do it";
+        advice = `This costs <b>$${fmt(price)}</b> but you only have <b>$${fmt(remaining)}</b> left in your budget. Buying this puts you <b>$${fmt(price - remaining)} over</b>.`;
+      } else if (price > remaining * 0.5) {
+        verdict = "RISKY";
+        color = "#f59e0b";
+        verdictText = "Risky move";
+        advice = `This eats <b>${(price/remaining*100).toFixed(0)}%</b> of your remaining $${fmt(remaining)} budget for the month. Doable, but you'll be tight. Sleep on it.`;
+      } else if (price > remaining * 0.2) {
+        verdict = "MAYBE";
+        color = "#f59e0b";
+        verdictText = "Think about it";
+        advice = `This is <b>${(price/remaining*100).toFixed(0)}%</b> of your remaining budget. Not crazy, but ask: do you actually want this, or are you bored?`;
+      } else {
+        verdict = "YES";
+        color = "#6366f1";
+        verdictText = "Go for it";
+        advice = `Just <b>${(price/remaining*100).toFixed(0)}%</b> of your remaining $${fmt(remaining)} budget. You're fine. If you want it, buy it.`;
+      }
+
+      const ageProj = `<div class="text-sm text-zinc-400 leading-relaxed">If you skipped this and invested the $${fmt(price)} at 7% average return:<br/>
+        <span class="text-zinc-300">In 10 years</span> → <b class="accent-text">$${fmt(futureValue10)}</b><br/>
+        <span class="text-zinc-300">In 30 years</span> → <b class="accent-text">$${fmt(futureValue30)}</b></div>`;
+
+      result.innerHTML = `
+        <div class="panel p-5 fade-in" style="background:${color}10; border-color:${color}40;">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-3xl font-bold" style="color:${color}">${verdict}</div>
+            <div class="text-sm font-medium" style="color:${color}">${verdictText}</div>
+          </div>
+          <p class="text-sm text-zinc-300 leading-relaxed">${advice}</p>
+        </div>
+        <div class="panel p-5">
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Future You penalty</div>
+          ${ageProj}
+        </div>
+      `;
+    }
+
+    function saveToWishlistFromAfford() {
+      const price = parseFloat(document.getElementById("afford-price").value);
+      const name = document.getElementById("afford-name").value.trim() || "Item I almost bought";
+      if (!price || price <= 0) return;
+      state.wishlist.push({
+        id: Date.now(), name, price, url: "",
+        status: "didnt_buy",
+        addedAt: new Date().toISOString(),
+        decidedAt: new Date().toISOString()
+      });
+      saveState();
+      renderWishlist();
+      hideModal("afford");
+      document.getElementById("afford-price").value = "";
+      document.getElementById("afford-name").value = "";
+      toast(`+$${fmt(price)} saved. Self-control unlocked.`);
+    }
+
+    // ============ AI COACH CHAT ============
+    let chatHistory = [];
+
+    function appendChatMessage(text, isUser) {
+      const div = document.createElement("div");
+      div.className = "flex " + (isUser ? "justify-end" : "justify-start");
+      div.innerHTML = isUser
+        ? `<div class="max-w-md px-4 py-2.5 rounded-2xl rounded-tr-sm" style="background:var(--accent); color:#ffffff;"><div class="text-sm font-medium">${escapeHtml(text)}</div></div>`
+        : `<div class="max-w-md px-4 py-2.5 rounded-2xl rounded-tl-sm bg-zinc-800 border border-zinc-700"><div class="text-sm leading-relaxed">${text}</div></div>`;
+      document.getElementById("chat-messages").appendChild(div);
+      document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function sendChat() {
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      if (!text) return;
+      appendChatMessage(text, true);
+      chatHistory.push({ role: "user", text });
+      input.value = "";
+      hideChatSuggestions();
+      // Simulate "thinking"
+      setTimeout(() => {
+        const response = generateChatResponse(text);
+        appendChatMessage(response, false);
+        chatHistory.push({ role: "assistant", text: response });
+      }, 400);
+    }
+
+    function generateChatResponse(question) {
+      const q = question.toLowerCase();
+      const txs = state.transactions;
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+
+      if (txs.length === 0) {
+        return `I'd love to help, but I don't have any data yet. Head to the <b>Analyze</b> tab and load your transactions (or hit "Try sample data") and then come back. I can only be honest about money I can actually see.`;
+      }
+
+      // "How much did I spend on X"
+      if (/how much.*spend|spent.*on|what.*spend/.test(q)) {
+        // Try to match category or merchant
+        for (const cat of Object.keys(CATEGORIES)) {
+          if (q.includes(cat.toLowerCase().split(" ")[0])) {
+            const amt = txs.filter(t => t.category === cat).reduce((s, t) => s + t.amount, 0);
+            const count = txs.filter(t => t.category === cat).length;
+            if (amt > 0) return `You spent <b>$${fmt(amt)}</b> on <b>${cat}</b> across ${count} transaction${count !== 1 ? "s" : ""} — that's <b>${(amt/total*100).toFixed(0)}%</b> of your total spending.`;
+          }
+        }
+        // Try merchant match
+        for (const t of txs) {
+          if (q.includes(t.merchant.toLowerCase().split(" ")[0])) {
+            const matching = txs.filter(x => x.merchant.toLowerCase().includes(t.merchant.toLowerCase().split(" ")[0]));
+            const amt = matching.reduce((s, x) => s + x.amount, 0);
+            return `You spent <b>$${fmt(amt)}</b> at <b>${t.merchant}</b> across ${matching.length} transaction${matching.length !== 1 ? "s" : ""}. ${matching.length > 2 ? "That's a lot. Why?" : ""}`;
+          }
+        }
+        return `You spent <b>$${fmt(total)}</b> total across ${txs.length} transactions. Want me to break it down by category? Just ask "what's my biggest category."`;
+      }
+
+      // "Can I afford X"
+      const priceMatch = q.match(/\$?(\d+)/);
+      if (/afford|buy|should i/.test(q) && priceMatch) {
+        const price = parseFloat(priceMatch[1]);
+        if (!state.budget) return `I can't say without knowing your budget. Set one on the Analyze tab and I'll give you a real answer for the $${price}.`;
+        const remaining = state.budget - total;
+        if (remaining <= 0) return `You're already over budget by $${fmt(-remaining)}. Spending another $${price} would make it worse. <b>No.</b> Don't do it.`;
+        if (price > remaining) return `<b>No.</b> You only have $${fmt(remaining)} left in your budget and that costs $${price}. You'd be $${fmt(price - remaining)} over.`;
+        if (price > remaining * 0.5) return `<b>Risky.</b> $${price} is ${(price/remaining*100).toFixed(0)}% of your remaining budget ($${fmt(remaining)}). Doable but tight. Use the "Can I afford this?" button for a full breakdown.`;
+        return `<b>Yes.</b> $${price} is only ${(price/remaining*100).toFixed(0)}% of your remaining $${fmt(remaining)} budget. You're fine. But ask yourself: do you actually want it?`;
+      }
+
+      // "What should I cut"
+      if (/cut|save more|reduce|lower/.test(q)) {
+        const byCat = {};
+        for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+        const top = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+        const biggest = top[0];
+        const cutAmount = biggest[1] * 0.3;
+        return `Your biggest leak is <b>${biggest[0]}</b> at <b>$${fmt(biggest[1])}</b>. If you cut that by 30%, you'd save <b>$${fmt(cutAmount)}/month</b> — that's <b>$${fmt(cutAmount * 12)}/year</b>. Specifics: ${biggest[0] === "Food & Dining" ? "cook 2 more meals a week instead of takeout." : biggest[0] === "Subscriptions" ? "cancel anything you haven't actively used in 30 days." : biggest[0] === "Shopping" ? "use the 48-hour rule on every purchase over $50." : "audit your top merchants and ask if each was worth it."}`;
+      }
+
+      // "Am I doing okay" / "How am I doing"
+      if (/doing (well|okay|good|alright|fine)|how am i|am i (good|okay)|on track/.test(q)) {
+        if (!state.budget) return `Hard to say without a budget set. Roughly: you spent $${fmt(total)} across ${txs.length} transactions. Set a budget on the Analyze tab and I can give you a real verdict.`;
+        const ratio = total / state.budget;
+        if (ratio < 0.7) return `You're <b>crushing it</b>. Spent $${fmt(total)} of your $${fmt(state.budget)} budget. <b>$${fmt(state.budget - total)} left</b> in the tank. This is what a good month looks like — don't let yourself blow it in the last week.`;
+        if (ratio < 1) return `You're <b>fine</b>. Spent $${fmt(total)} of $${fmt(state.budget)}. ${(ratio*100).toFixed(0)}% used. Just don't get too comfortable — one impulse buy can flip this.`;
+        if (ratio < 1.2) return `You're <b>over budget</b>. Spent $${fmt(total)} on a $${fmt(state.budget)} budget — that's $${fmt(total - state.budget)} over. Not catastrophic, but the trend matters.`;
+        return `<b>Not doing okay.</b> You blew through your $${fmt(state.budget)} budget by $${fmt(total - state.budget)}. That's ${((ratio-1)*100).toFixed(0)}% over. Time for a real conversation with yourself.`;
+      }
+
+      // "How long to save X"
+      if (/save|reach.*goal|how long/.test(q) && priceMatch) {
+        const target = parseFloat(priceMatch[1]);
+        const monthlySavings = state.budget ? Math.max(0, state.budget - total) : 0;
+        if (monthlySavings <= 0) return `Right now? Forever. You're not saving anything based on your current spending. Use the Goal Planner tab — it'll show you exactly what to cut to actually save $${target}.`;
+        const months = Math.ceil(target / monthlySavings);
+        return `At your current savings rate of <b>$${fmt(monthlySavings)}/month</b>, you'd reach $${target} in <b>${months} month${months !== 1 ? "s" : ""}</b>. That's around ${months >= 12 ? (months/12).toFixed(1) + " years" : "less than a year"}. Want a real plan? Open the Goal Planner tab.`;
+      }
+
+      // "Roast my spending" / "Be brutal"
+      if (/roast|brutal|honest|judge me|tell me the truth/.test(q)) {
+        return generateRoast();
+      }
+
+      // "Future you" / "Invest"
+      if (/invest|future|retire|compound/.test(q) && priceMatch) {
+        const amt = parseFloat(priceMatch[1]);
+        const fv = amt * Math.pow(1.07, 30);
+        return `If you skipped that $${amt} and invested it at 7% average return, in 30 years it'd be <b>$${fmt(fv)}</b>. Let that sit for a second.`;
+      }
+
+      // "Top category" / "biggest"
+      if (/top|biggest|most|main|largest/.test(q)) {
+        const byCat = {};
+        for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+        const top = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+        return `Your biggest category is <b>${top[0]}</b> at <b>$${fmt(top[1])}</b> — that's <b>${(top[1]/total*100).toFixed(0)}%</b> of all your spending.`;
+      }
+
+      // "Subscriptions"
+      if (/subscription|recurring|netflix|spotify/.test(q)) {
+        const subs = txs.filter(t => t.category === "Subscriptions");
+        const subTotal = subs.reduce((s, t) => s + t.amount, 0);
+        if (subs.length === 0) return `I don't see any subscriptions in your data. Either you're disciplined, or your data doesn't include them yet.`;
+        return `You have <b>${subs.length} subscription${subs.length !== 1 ? "s" : ""}</b> totaling <b>$${fmt(subTotal)}/month</b> — that's $${fmt(subTotal * 12)}/year. Be honest: have you used all of them in the last 30 days?`;
+      }
+
+      // GENERAL MONEY ADVICE PATTERNS
+
+      // "How do I reduce/lessen/lower spending"
+      if (/reduce|lessen|lower|cut down|decrease|spend less|stop spending|control/.test(q)) {
+        const byCat = {};
+        for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+        const top = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+        return `Here's the playbook to actually reduce spending: <br/><br/>
+        <b>1. The 48-hour rule.</b> Anything over $50, wait 2 days before buying. You'll skip half of them.<br/>
+        <b>2. Cancel zombie subscriptions.</b> ${state.transactions.filter(t => t.category === "Subscriptions").length > 0 ? `You have ${state.transactions.filter(t => t.category === "Subscriptions").length} active — check the Money Leaks tab.` : "Audit them — the average person has 4 they forgot about."}<br/>
+        <b>3. Cook more, order less.</b> ${top && top[0] === "Food & Dining" ? `Your biggest category IS food at $${fmt(top[1])}. That's the move.` : "DoorDash is 30-40% more expensive than cooking."}<br/>
+        <b>4. Unfollow shopping accounts.</b> If you don't see it, you don't want it.<br/>
+        <b>5. Use the "skip it" feature.</b> Open the Reverse Wishlist tab — add anything you almost bought. Save the money instead.`;
+      }
+
+      // "How do I save more / save money"
+      if (/save more|save money|how to save|how do i save|increase savings|build savings/.test(q)) {
+        return `The honest answer: <b>spend less</b> or <b>earn more</b>. Both work, neither is easy.<br/><br/>
+        <b>Quick wins on the spending side:</b><br/>
+        • Pay yourself first — set up auto-transfer to savings the day you get paid<br/>
+        • Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings<br/>
+        • Cancel anything you haven't used in 30 days<br/>
+        • Cook 2 more meals at home per week<br/><br/>
+        <b>Quick wins on the earning side:</b><br/>
+        • Negotiate your salary (most people leave money on the table)<br/>
+        • Side hustle 5 hours/week<br/>
+        • Sell stuff you don't use<br/><br/>
+        Pick ONE this week. Most people try to do all of them and quit by Wednesday.`;
+      }
+
+      // "How to budget"
+      if (/how (do i |to )?budget|make a budget|create budget|start budgeting|budgeting tips/.test(q)) {
+        return `The simplest budget that actually works — the <b>50/30/20 rule</b>:<br/><br/>
+        • <b>50%</b> of after-tax income → <b>Needs</b> (rent, groceries, utilities, transport, insurance)<br/>
+        • <b>30%</b> → <b>Wants</b> (eating out, subscriptions, hobbies, shopping)<br/>
+        • <b>20%</b> → <b>Savings + debt payments</b><br/><br/>
+        If your income is $4,000/month:<br/>
+        $2,000 needs / $1,200 wants / $800 savings<br/><br/>
+        Don't worry about being perfect. Just track it. <b>Knowing where it goes is 80% of the battle.</b>`;
+      }
+
+      // "How much should I save / save percentage"
+      if (/how much .*save|savings rate|percent.*save|emergency fund|save for retirement/.test(q)) {
+        return `The benchmarks most experts agree on:<br/><br/>
+        <b>Emergency fund:</b> 3-6 months of expenses in a high-yield savings account<br/>
+        <b>Retirement:</b> 15% of gross income (including employer match if you have one)<br/>
+        <b>General savings rate:</b> 20% is the gold standard. 10% is realistic if you're starting out.<br/><br/>
+        Don't aim for perfect from day one. Start with <b>$25/week</b> and increase by $5/month. In a year you're saving $250/month without feeling it.<br/><br/>
+        ${state.transactions.length > 0 ? `Your current monthly spending is $${fmt(state.transactions.reduce((s, t) => s + t.amount, 0))}. So your emergency fund target is ~$${fmt(state.transactions.reduce((s, t) => s + t.amount, 0) * 3)}-$${fmt(state.transactions.reduce((s, t) => s + t.amount, 0) * 6)}.` : ''}`;
+      }
+
+      // "How to pay off debt / debt payoff"
+      if (/pay off debt|debt payoff|get out of debt|credit card debt|student loan|debt strategy/.test(q)) {
+        return `Two methods that actually work:<br/><br/>
+        <b>Avalanche method (saves more money):</b><br/>
+        List debts → pay minimums on all → throw extra at <b>highest interest rate</b> first<br/><br/>
+        <b>Snowball method (more motivating):</b><br/>
+        List debts → pay minimums on all → throw extra at <b>smallest balance</b> first<br/><br/>
+        <b>My honest take:</b> Avalanche is mathematically better, but if you're struggling to stay motivated, snowball wins because killing a debt fully feels amazing.<br/><br/>
+        <b>Bonus moves:</b><br/>
+        • Stop adding to credit cards while paying them off (sounds obvious, gets ignored)<br/>
+        • Call your credit card and ask for a lower APR — works ~30% of the time<br/>
+        • Consider a 0% balance transfer card if your credit is decent`;
+      }
+
+      // "How to invest / investing basics"
+      if (/how (do i |to )?invest|investing|stocks|index fund|etf|retirement account|401k|roth ira/.test(q)) {
+        return `The boring truth about investing for most people:<br/><br/>
+        <b>1. Get the employer 401k match if you have one.</b> It's literally free money.<br/>
+        <b>2. Open a Roth IRA</b> (Vanguard or Fidelity, free). Contribute what you can up to $7,000/year (2026 limit).<br/>
+        <b>3. Buy a total market index fund</b> (VTI, VOO, FZROX) and don't touch it for 30 years.<br/>
+        <b>4. Ignore stock picking, day trading, crypto YouTubers.</b> They're not getting richer than the boring index fund. They're getting richer from your views.<br/><br/>
+        <b>Math that matters:</b> $200/month invested at 7% average return becomes <b>$245,000</b> in 30 years.<br/><br/>
+        Investing isn't about being smart. It's about being patient.`;
+      }
+
+      // "Worth it / should I buy"
+      if (/worth it|should i (buy|get)|good deal|smart purchase/.test(q)) {
+        return `The 4 questions to ask before any purchase over $100:<br/><br/>
+        <b>1. Will I still want it in 30 days?</b> If unsure, wait 30 days. Add it to the Reverse Wishlist tab.<br/>
+        <b>2. What's the cost per use?</b> $200 jacket worn 100 times = $2/use (good). $200 dress worn twice = $100/use (bad).<br/>
+        <b>3. Am I buying this for me, or to impress someone?</b> Be honest. Buying for others = always regret.<br/>
+        <b>4. What's the opportunity cost?</b> $200 invested at 7% over 30 years = $1,524. Worth it?<br/><br/>
+        Use the green "Can I afford this?" button (bottom right) — type the price, get an instant verdict.`;
+      }
+
+      // "Income / make more money / side hustle"
+      if (/make more money|increase income|side hustle|earn more|extra income/.test(q)) {
+        return `The honest hierarchy of ways to make more money:<br/><br/>
+        <b>1. Negotiate your current salary.</b> Highest return per hour of effort. Most people leave $5-20k on the table.<br/>
+        <b>2. Get a raise or promotion.</b> Document wins. Ask for the meeting.<br/>
+        <b>3. Switch jobs.</b> Average 10-20% bump. Job-hopping is the truth nobody admits.<br/>
+        <b>4. Build a skill that pays a premium.</b> Writing, code, design, sales. Pick one. Get good in 12 months.<br/>
+        <b>5. Side hustle.</b> Freelance your existing skill. Most "side hustle gurus" make money selling courses, not the hustle itself.<br/><br/>
+        Skip: MLMs, anything promising "$500/day with no skills," dropshipping (unless you really enjoy logistics).`;
+      }
+
+      // Default
+      const responses = [
+        `You spent <b>$${fmt(total)}</b> across ${txs.length} transactions${state.budget ? ` against a $${fmt(state.budget)} budget` : ""}. Ask me anything — try "how do I save more," "should I buy [X]," "what should I cut," or "roast my spending."`,
+        `I can help with: spending breakdowns, affordability checks, budgeting tips, debt payoff strategies, investing basics, and brutal honesty about your habits. What's on your mind?`,
+        `Try asking: "how do I reduce my spending?" / "how much should I save?" / "what's a good budget?" / "how do I pay off debt?" / "should I buy [thing]?" / "how do I invest?"`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    function showChatSuggestions() {
+      const suggestions = [
+        "Am I doing okay?",
+        "What should I cut?",
+        "Roast my spending",
+        "Top category?"
+      ];
+      const html = suggestions.map(s => `<button onclick="quickAsk('${s}')" class="btn-ghost px-3 py-1.5 rounded-full text-xs">${s}</button>`).join("");
+      document.getElementById("chat-suggestions").innerHTML = html;
+    }
+
+    function hideChatSuggestions() {
+      document.getElementById("chat-suggestions").innerHTML = "";
+    }
+
+    function quickAsk(text) {
+      document.getElementById("chat-input").value = text;
+      sendChat();
+    }
+
+    function resetChat() {
+      chatHistory = [];
+      document.getElementById("chat-messages").innerHTML = "";
+      initChatGreeting();
+    }
+
+    function initChatGreeting() {
+      const txs = state.transactions;
+      const greeting = txs.length === 0
+        ? `Hey. I'm your AI money coach. I'll be honest with you about your spending — no sugarcoating. <br/><br/>Right now I don't have any data. Head to the <b>Analyze</b> tab, load your transactions, and come back. Or hit "Try sample data" to see what I can do.`
+        : `Hey. I've got your <b>${txs.length} transactions</b>${state.budget ? ` and your $${fmt(state.budget)} budget` : ""} loaded up. Ask me anything — I won't lie to you about your money.`;
+      appendChatMessage(greeting, false);
+      showChatSuggestions();
+    }
+
+    // ============ SPENDING PERSONALITY ============
+    function computePersonality() {
+      const txs = state.transactions;
+      if (txs.length === 0) return null;
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      const byCat = {};
+      for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+
+      const food = (byCat["Food & Dining"] || 0) / total;
+      const groceries = (byCat["Groceries"] || 0) / total;
+      const subs = (byCat["Subscriptions"] || 0) / total;
+      const shopping = (byCat["Shopping"] || 0) / total;
+      const subCount = txs.filter(t => t.category === "Subscriptions").length;
+      const biggest = [...txs].sort((a, b) => b.amount - a.amount)[0];
+      const biggestRatio = biggest ? biggest.amount / total : 0;
+      const avgTx = total / txs.length;
+      const underBudget = state.budget && total < state.budget * 0.8;
+      const overBudget = state.budget && total > state.budget;
+
+      let archetype, traits, advice, color;
+      if (subCount >= 4) {
+        archetype = "The Subscription Hoarder";
+        traits = ["Auto-pays without thinking", "Forgets what they're paying for", "Has at least one zombie subscription"];
+        advice = "Cancel anything you haven't actively used in 30 days. You can always re-subscribe. The 'just $X/month' trap is real.";
+        color = "#ec4899";
+      } else if (food > 0.3) {
+        archetype = "The Comfort Spender";
+        traits = ["Stress-orders takeout", "Says 'I deserve this' a lot", "Has a favorite delivery driver"];
+        advice = "Your food bill is a feelings bill. Keep a 'comfort meals' grocery list — fast, cheap, and at home. Cuts the urge in half.";
+        color = "#f59e0b";
+      } else if (shopping > 0.3 && overBudget) {
+        archetype = "The Lifestyle Inflater";
+        traits = ["Each paycheck = new spending", "Treats Amazon as a hobby", "Calls it 'self-care'"];
+        advice = "You're scaling your lifestyle faster than your savings. The 48-hour rule is your new best friend. If you still want it after 2 days, fine. You usually won't.";
+        color = "#a855f7";
+      } else if (avgTx < 18 && txs.length > 15) {
+        archetype = "The Doom Scroller";
+        traits = ["Many small impulse buys", "Bought it during TikTok", "Forgets purchases by the time they arrive"];
+        advice = "Death by a thousand small purchases. Set a $20 'gut check' — anything under that, ask 'will I remember this in a week?' Most won't survive.";
+        color = "#6366f1";
+      } else if (biggestRatio > 0.3) {
+        archetype = "The Big Splurger";
+        traits = ["Saves up, then unloads on one thing", "Justifies it with 'it's an investment'", "Gets buyer's remorse 3 days later"];
+        advice = "Your spending isn't death-by-cuts, it's death-by-one-haymaker. Big buys deserve their own waiting period. Add to Reverse Wishlist for 7 days minimum.";
+        color = "#06b6d4";
+      } else if (underBudget) {
+        archetype = "The Discipline Builder";
+        traits = ["Actually reads the price tag", "Has 'fun money' as a category", "Future-you's biggest fan"];
+        advice = "You're winning. Don't get cocky — the wagon is easy to fall off. Set up an automatic transfer for the surplus before lifestyle inflation finds you.";
+        color = "#6366f1";
+      } else if (groceries > food && groceries > 0.2) {
+        archetype = "The Survivor";
+        traits = ["Cooks more than orders", "Knows their grocery store layout", "Doesn't lifestyle-inflate"];
+        advice = "Quietly excellent. The next move is making sure you're paying YOURSELF (savings, investing) the way you pay your groceries. Automate it.";
+        color = "#84cc16";
+      } else {
+        archetype = "The Balanced Spender";
+        traits = ["No category screaming for attention", "Mostly intentional buys", "Could push for more savings"];
+        advice = "You're fine. Not great, not terrible. The next level is setting an actual savings goal — pick one in the Goal Planner and watch what happens.";
+        color = "#71717a";
+      }
+      return { archetype, traits, advice, color };
+    }
+
+    function generateRoast() {
+      const txs = state.transactions;
+      if (txs.length === 0) return "Nothing to roast yet. Add some transactions and I'll cook.";
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      const byCat = {};
+      for (const t of txs) byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+      const food = byCat["Food & Dining"] || 0;
+      const subs = byCat["Subscriptions"] || 0;
+      const shopping = byCat["Shopping"] || 0;
+      const groceries = byCat["Groceries"] || 0;
+      const subCount = txs.filter(t => t.category === "Subscriptions").length;
+      const biggest = [...txs].sort((a, b) => b.amount - a.amount)[0];
+
+      const lines = [];
+      if (food > groceries * 2 && food > 50) lines.push(`You spent <b>$${fmt(food)}</b> on takeout and <b>$${fmt(groceries)}</b> on groceries. Your kitchen is a museum.`);
+      if (subCount >= 4) lines.push(`<b>${subCount} subscriptions</b>. Half of them you forgot existed. They didn't forget about you though — they're billing you on the 1st.`);
+      if (shopping > total * 0.3) lines.push(`<b>${(shopping/total*100).toFixed(0)}%</b> of your money went to shopping. That's not "treating yourself," that's a lifestyle.`);
+      if (biggest && biggest.amount > total * 0.2) lines.push(`<b>${biggest.merchant}</b> at <b>$${fmt(biggest.amount)}</b>? Whatever it was, I hope you're still using it.`);
+      if (state.budget && total > state.budget) lines.push(`You set a $${fmt(state.budget)} budget. You spent $${fmt(total)}. Math is undefeated.`);
+      if (txs.filter(t => /starbucks|coffee/i.test(t.merchant)).length >= 3) lines.push(`Multiple coffee runs. Your barista knows your name. Your savings account doesn't.`);
+      if (txs.filter(t => /doordash|ubereats|grubhub/i.test(t.merchant)).length >= 3) lines.push(`Multiple delivery orders. Cooking is a skill. Tipping a driver $7 to bring you fries isn't.`);
+
+      if (lines.length === 0) lines.push(`Honestly? You're doing fine. Boring spending is good spending. Keep being a problem for the credit card industry.`);
+
+      const closer = state.budget && total < state.budget * 0.8
+        ? `\n\nBut credit where due — you're <b class="accent-text">under budget</b>. So this roast comes with a hug.`
+        : `\n\nThat's the roast. Take notes.`;
+
+      return lines.slice(0, 3).join(" ") + closer;
+    }
+
+    function renderPersonality() {
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        document.getElementById("personality-empty").classList.remove("hidden");
+        document.getElementById("personality-content").classList.add("hidden");
+        return;
+      }
+      document.getElementById("personality-empty").classList.add("hidden");
+      document.getElementById("personality-content").classList.remove("hidden");
+      const p = computePersonality();
+      const roast = generateRoast();
+
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      const monthlySpend = total;
+      const yearlySpend = monthlySpend * 12;
+      const fv30 = yearlySpend * Math.pow(1.07, 30);
+
+      document.getElementById("personality-content").innerHTML = `
+        <div class="panel p-6 fade-in" style="border-color:${p.color}40; background: linear-gradient(180deg, ${p.color}08, transparent);">
+          <div class="text-xs uppercase tracking-wider mb-2" style="color:${p.color}">Your Spending Archetype</div>
+          <div class="text-3xl font-bold mb-3">${p.archetype}</div>
+          <div class="text-sm text-zinc-400 mb-4">Based on ${txs.length} transactions${state.budget ? ` and your $${fmt(state.budget)} budget` : ""}.</div>
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Traits</div>
+          <ul class="space-y-2 mb-4 text-sm text-zinc-300">
+            ${p.traits.map(t => `<li class="flex items-start gap-2"><span style="color:${p.color}">•</span><span>${t}</span></li>`).join("")}
+          </ul>
+          <div class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your move</div>
+          <p class="text-sm text-zinc-300 leading-relaxed">${p.advice}</p>
+          <button onclick="copyPersonality('${p.archetype.replace(/'/g, "\\'")}')" class="btn-ghost mt-5 w-full py-2 rounded-lg text-xs">📤 Copy & share</button>
+        </div>
+
+        <div class="space-y-4">
+          <div class="panel p-6 fade-in">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-3">🔥 The Roast</div>
+            <div class="text-sm text-zinc-300 leading-relaxed">${roast}</div>
+            <button onclick="copyRoast()" class="btn-ghost mt-5 w-full py-2 rounded-lg text-xs">📤 Copy roast</button>
+          </div>
+
+          <div class="panel p-6 fade-in">
+            <div class="text-xs text-zinc-500 uppercase tracking-wider mb-3">⏳ Future You</div>
+            <div class="text-sm text-zinc-400 leading-relaxed mb-3">If you spent the same as this month, every month, for the next 30 years, that's <b class="text-white">$${fmt(yearlySpend * 30)}</b>.</div>
+            <div class="text-sm text-zinc-400 leading-relaxed">If instead you cut your spending by 10% and invested the savings at 7%? <b class="accent-text">$${fmt(monthlySpend * 0.1 * 12 * (Math.pow(1.07, 30) - 1) / 0.07)}</b> in 30 years.</div>
+            <div class="mt-3 pt-3 border-t border-zinc-800 text-xs text-zinc-500">That's a house. Or a comfortable retirement. From 10%.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function copyPersonality(archetype) {
+      const text = `According to Reign, my spending archetype is "${archetype}". 😬\n\nReign — the no-BS finance app that actually tells you the truth.`;
+      navigator.clipboard.writeText(text).then(() => toast("Copied — paste it anywhere"));
+    }
+    function copyRoast() {
+      const txs = state.transactions;
+      const total = txs.reduce((s, t) => s + t.amount, 0);
+      const text = `Reign just roasted my spending. ${txs.length} transactions, $${fmt(total)} total. I'm not okay.\n\nGet roasted yourself: finance-ai.app`;
+      navigator.clipboard.writeText(text).then(() => toast("Roast copied — share it"));
+    }
+
+    // ============ STREAK TRACKING ============
+    function updateStreak() {
+      const today = new Date().toDateString();
+      if (!state.streak) state.streak = { count: 0, lastVisit: null };
+      if (state.streak.lastVisit !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (state.streak.lastVisit === yesterday) {
+          state.streak.count += 1;
+        } else if (!state.streak.lastVisit) {
+          state.streak.count = 1;
+        } else {
+          state.streak.count = 1;
+        }
+        state.streak.lastVisit = today;
+        saveState();
+      }
+      const el = document.getElementById("stat-streak");
+      const sub = document.getElementById("stat-streak-sub");
+      if (el) el.textContent = state.streak.count;
+      if (sub) sub.textContent = state.streak.count === 1 ? "Day using the app" : `Days in a row 🔥`;
+    }
+
+    // ============ WAITLIST ============
+    function joinWaitlist(e) {
+      e.preventDefault();
+      const email = document.getElementById("waitlist-email").value.trim();
+      if (!email) return false;
+      state.waitlistEmail = email;
+      saveState();
+      // Open Tally with email prefilled — user confirms on Tally's page
+      const tallyUrl = `https://tally.so/r/kdK7Pj?email=${encodeURIComponent(email)}`;
+      window.open(tallyUrl, "_blank");
+      document.getElementById("waitlist-form").style.display = "none";
+      document.getElementById("waitlist-success").classList.remove("hidden");
+      toast("You're on the list. $3/mo Basic locked in.");
+      return false;
+    }
+
+    // ============ FAQ ============
+    function toggleFAQ(el) {
+      const body = el.querySelector(".faq-body");
+      const icon = el.querySelector(".faq-icon");
+      const isOpen = !body.classList.contains("hidden");
+      if (isOpen) {
+        body.classList.add("hidden");
+        icon.style.transform = "rotate(0deg)";
+      } else {
+        body.classList.remove("hidden");
+        icon.style.transform = "rotate(180deg)";
+      }
+    }
+
+    // ============ SHARE ============
+    function shareApp() {
+      const text = "Just found this AI finance app that actually tells you the truth about your spending. It even roasts you. Check it out:";
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({ title: "Reign", text, url }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text + " " + url).then(() => toast("Link copied — share it anywhere"));
+      }
+    }
+
+    // ============ TIP ============
+    function tip(amount) {
+      hideModal("tip");
+      toast(`$${amount} tip — thank you 🙏 (Stripe coming in v2)`);
+    }
+
+    function scrollToSection(id) {
+      // If we're in the app view, switch to landing first
+      const isAppVisible = !document.getElementById("main-app").classList.contains("hidden");
+      if (isAppVisible) {
+        showLanding();
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 150);
+      } else {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+    function scrollToPricing() { scrollToSection("pricing-section"); }
+
+    // ============ LANDING vs APP VIEW ============
+    function showApp(loadSample) {
+      document.querySelectorAll(".landing-only").forEach(el => el.classList.add("hidden"));
+      document.getElementById("main-app").classList.remove("hidden");
+      const fab = document.getElementById("afford-fab");
+      if (fab) fab.style.display = "flex";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (loadSample && state.transactions.length === 0) {
+        loadSampleData();
+      }
+    }
+    function showLanding() {
+      document.querySelectorAll(".landing-only").forEach(el => el.classList.remove("hidden"));
+      document.getElementById("main-app").classList.add("hidden");
+      const fab = document.getElementById("afford-fab");
+      if (fab) fab.style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // ============ INIT ============
+    if (state.transactions.length > 0) {
+      renderAll();
+      // If user has data, jump straight to app view
+      showApp(false);
+    } else {
+      renderStats();
+      renderWishlist();
+      renderPersonality();
+      // Hide the FAB on landing page
+      const fab = document.getElementById("afford-fab");
+      if (fab) fab.style.display = "none";
+    }
+    initChatGreeting();
+    updateStreak();
+  </script>
+</body>
+</html>
